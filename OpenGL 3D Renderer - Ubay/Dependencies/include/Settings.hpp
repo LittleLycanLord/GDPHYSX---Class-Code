@@ -3,6 +3,8 @@
 
 //* - - - - - DEBUG - - - - -
 const bool DEBUG_MODE                           = false;
+const bool DEBUG_MODE_MATH                      = true;
+const bool DEBUG_MODE_PHYSICS                   = true;
 //* - - - - - END OF DEBUG - - - - -
 
 //* - - - - - ENGINE SETTINGS - - - - -
