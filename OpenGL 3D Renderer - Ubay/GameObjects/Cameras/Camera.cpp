@@ -11,11 +11,64 @@ Camera::Camera(std::string name, glm::mat4 projection, glm::vec3 position, glm::
       position(position),
       positionMatrix(glm::translate(glm::mat4(1.0f), position * -1.0f)),
       view(glm::mat4(1.0f)),
-      viewCenter(viewCenter) {}
+      viewCenter(viewCenter),
+      moveSpeed(glm::vec3(1.0f)) {}
 
 //* ╔═════════╗
 //* ║ Methods ║
 //* ╚═════════╝
+void Camera::CameraMovement(int key, int action, int mods) {
+    switch (key) {
+        //* Ascend
+        case GLFW_KEY_E:
+            // if (action == GLFW_PRESS) {
+                this->position.y += this->moveSpeed.y;
+                this->viewCenter.y += this->moveSpeed.y;
+            // }
+            if (DEBUG_MODE_CAMERA_MOVEMENT) std::cout << "Camera moving: [+y]" << std::endl;
+            break;
+        //* Descend
+        case GLFW_KEY_Q:
+            if (action == GLFW_PRESS) {
+                this->position.y -= this->moveSpeed.y;
+                this->viewCenter.y -= this->moveSpeed.y;
+            }
+            if (DEBUG_MODE_CAMERA_MOVEMENT) std::cout << "Camera moving: [-y]" << std::endl;
+            break;
+        //* Forward
+        case GLFW_KEY_W:
+            if (action == GLFW_PRESS) {
+                this->position.z -= this->moveSpeed.z;
+                this->viewCenter.z -= this->moveSpeed.z;
+            }
+            if (DEBUG_MODE_CAMERA_MOVEMENT) std::cout << "Camera moving: [-z]" << std::endl;
+            break;
+        //* Backward
+        case GLFW_KEY_S:
+            if (action == GLFW_PRESS) {
+                this->position.z += this->moveSpeed.z;
+                this->viewCenter.z += this->moveSpeed.z;
+            }
+            if (DEBUG_MODE_CAMERA_MOVEMENT) std::cout << "Camera moving: [+z]" << std::endl;
+            break;
+        //* Left
+        case GLFW_KEY_A:
+            if (action == GLFW_PRESS) {
+                this->position.x -= this->moveSpeed.x;
+                this->viewCenter.x -= this->moveSpeed.x;
+            }
+            if (DEBUG_MODE_CAMERA_MOVEMENT) std::cout << "Camera moving: [-x]" << std::endl;
+            break;
+        //* Right
+        case GLFW_KEY_D:
+            if (action == GLFW_PRESS) {
+                this->position.x += this->moveSpeed.x;
+                this->viewCenter.x += this->moveSpeed.x;
+            }
+            if (DEBUG_MODE_CAMERA_MOVEMENT) std::cout << "Camera moving: [+x]" << std::endl;
+            break;
+    }
+}
 
 //* ╔═══════════════════╗
 //* ║ Getters & Setters ║

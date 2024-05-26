@@ -21,6 +21,7 @@ PerspectiveCamera::PerspectiveCamera(std::string name,
 //* ╔═════════╗
 //* ║ Methods ║
 //* ╚═════════╝
+void PerspectiveCamera::OtherInputs(int key, int action, int mods) {}
 
 //* ╔═══════════════════╗
 //* ║ Getters & Setters ║

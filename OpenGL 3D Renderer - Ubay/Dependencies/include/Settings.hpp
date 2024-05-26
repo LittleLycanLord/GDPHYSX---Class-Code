@@ -1,8 +1,11 @@
 #pragma once
+#include "chrono"
 #include "string"
+using namespace std::chrono_literals;
 
 //* - - - - - DEBUG - - - - -
 const bool DEBUG_MODE                           = false;
+const bool DEBUG_MODE_CAMERA_MOVEMENT           = true;
 const bool DEBUG_MODE_MATH                      = true;
 const bool DEBUG_MODE_PHYSICS                   = true;
 //* - - - - - END OF DEBUG - - - - -
@@ -11,6 +14,8 @@ const bool DEBUG_MODE_PHYSICS                   = true;
 const int WINDOW_WIDTH                          = 600;
 const int WINDOW_HEIGHT                         = 600;
 const bool DRAW_SKYBOX                          = false;
+const double FRAMERATE                          = 60.0f;
+constexpr std::chrono::nanoseconds TIMESTEP     = 16ms;
 
 const std::string WINDOW_NAME                   = "Conrad Amadeus Carmelo C. Ubay";
 

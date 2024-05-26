@@ -13,6 +13,10 @@ MyVector2::MyVector2(double x, double y) : x(x), y(y){};
 //* ╔═════════╗
 //* ║ Methods ║
 //* ╚═════════╝
+void MyVector2::DisplayValues(std::string message) {
+    cout << message << " -> " << "X: " << this->x << ", Y: " << this->y << endl;
+}
+
 //? Vector Operations
 MyVector2 MyVector2::operator+(const MyVector2 addend) {
     return MyVector2(this->x + addend.x, this->y + addend.y);

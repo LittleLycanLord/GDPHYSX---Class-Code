@@ -19,6 +19,7 @@ OrthographicCamera::OrthographicCamera(std::string name,
 //* ╔═════════╗
 //* ║ Methods ║
 //* ╚═════════╝
+void OrthographicCamera::OtherInputs(int key, int action, int mods) {}
 
 //* ╔═══════════════════╗
 //* ║ Getters & Setters ║

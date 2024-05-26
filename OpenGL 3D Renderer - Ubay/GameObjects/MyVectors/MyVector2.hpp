@@ -24,6 +24,8 @@ public:
     //* ║ Methods ║
     //* ╚═════════╝
 public:
+    void DisplayValues(std::string message);
+    
     //? Custom Typecast Override
     explicit operator glm::vec2() const { return glm::vec2(this->x, this->y); }
     explicit operator glm::vec3() const { return glm::vec3(this->x, this->y, 0.0f); };

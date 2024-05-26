@@ -11,10 +11,10 @@
 #include "cstdlib"
 #include "glm/gtx/transform.hpp"
 #include "iomanip"
-// clang-format off
-#include "glad/glad.h"
-#include "GLFW/glfw3.h"
-// clang-format on
+// // clang-format off
+// #include "glad/glad.h"
+// #include "GLFW/glfw3.h"
+// // clang-format on
 #include "stdafx.h"
 
 namespace models {

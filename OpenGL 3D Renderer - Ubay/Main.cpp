@@ -11,6 +11,7 @@
 #include "GameObjects/Lights/SpotLight/SpotLight.hpp"
 #include "GameObjects/Lights/PointLight/PointLight.hpp"
 #include "GameObjects/MyTexture/MyTexture.hpp"
+#include "GameObjects/MyParticle/MyParticle.hpp"
 #include "GameObjects/MyNormal/MyNormal.hpp"
 #include "GameObjects/Model3D/Model3D.hpp"
 #include "GameObjects/Player/Player.hpp"
@@ -19,7 +20,9 @@
 // clang-format on
 
 using namespace std;
+using namespace chrono;
 using namespace models;
+using namespace MyPhysics;
 
 //* - - - - - POINTERS AND CONTAINERS - - - - -
 vector<DirectionalLight*> directionalLights = {};
@@ -33,8 +36,18 @@ Model3D* activeModel                        = NULL;
 vector<Camera*> cameras                     = {};
 Camera* activeCamera                        = NULL;
 
+vector<MyParticle*> particles               = {};
+
 Player* player                              = NULL;
 //* - - - - - END OF POINTERS AND CONTAINERS - - - - -
+
+//* - - - - - PHYSICS - - - - -
+using physicsClock                          = high_resolution_clock;
+using timerClock                            = steady_clock;
+auto timerClockStart                        = timerClock::now();
+auto timerClockEnd                          = timerClock::now();
+nanoseconds currentNanosecond(0);
+//* - - - - - END OF PHYSICS - - - - -
 
 //? Reserved GLFW Function for Keyboard Inputs
 void Key_Callback(
@@ -43,7 +56,9 @@ void Key_Callback(
     int scancode,        //? What exact physical key was pressed?
     int action,  //? What is being done to the key? [GLFW_PRESS, GLFW_REPEAT or GLFW_RELEASE]
     int mods) {  //? Which modifer keys are held? [alt, control, shift, Super, num lock, and caps
-                 //?lock]
+    //?lock]
+    activeCamera->CameraMovement(key, action, mods);
+    activeCamera->OtherInputs(key, action, mods);
 }
 
 int main(void) {
@@ -188,17 +203,17 @@ int main(void) {
 
     //* - - - - - CAMERAS - - - - -
     cameras           = {//    new PerspectiveCamera("Sample Camera",
-               //                          glm::vec3(0.0f, 5.0f, 5.0f),
+               //                          glm::vec3(0.0f, 0.0f, 0.0f),
                //                          glm::vec3(0.0f, 0.0f, -1.0f),
                //                          60.0f,
-               //                          100.0f),
+               //                          1000.0f),
                new OrthographicCamera("Main",
-                                      glm::vec3(0.0f),
-                                      glm::vec3(0.0f, 0.0f, -1.0f),
-                                      -2.0f,
-                                      2.0f,
-                                      -2.0f,
-                                      2.0f,
+                                      glm::vec3(0.0f, 600.0f, 0.0f),
+                                      glm::vec3(0.0f, 600.0f, -1.0f),
+                                      -600.0f,
+                                      600.0f,
+                                      -600.0f,
+                                      600.0f,
                                       0.001f,
                                       1000.0f)};
 
@@ -217,7 +232,7 @@ int main(void) {
 
     //* - - - - - LIGHTS - - - - -
     directionalLights     = {
-       new DirectionalLight("White Directional Light",
+       new DirectionalLight("Top White Directional Light",
                             true,
                             glm::vec3(0.0f, -1.0f, 0.0f),  //? Direction
                             glm::vec3(1.0f, 1.0f, 1.0f),   //? Color
@@ -225,7 +240,16 @@ int main(void) {
                             glm::vec3(1.0f, 1.0f, 1.0f),   //? Ambient Color
                             0.5f,                          //? Specular Strength
                             16,                            //? Specular Phong
-                            1.0f),                         //? Brightness
+                            5.0f),                         //? Brightness
+       new DirectionalLight("Bottom White Directional Light",
+                            true,
+                            glm::vec3(0.0f, 1.0f, 0.0f),  //? Direction
+                            glm::vec3(1.0f, 1.0f, 1.0f),  //? Color
+                            0.1f,                         //? Ambient Strength
+                            glm::vec3(1.0f, 1.0f, 1.0f),  //? Ambient Color
+                            0.5f,                         //? Specular Strength
+                            16,                           //? Specular Phong
+                            5.0f),                        //? Brightness
     };
     for (DirectionalLight* directionalLight : directionalLights) lights.push_back(directionalLight);
 
@@ -266,22 +290,88 @@ int main(void) {
                             "",
                             glm::vec3(0.0f, 0.0f, 0.0f),
                             glm::mat4(1.0f),
-                            glm::vec3(1.0f),
+                            glm::vec3(3.0f),
                             glm::vec3(0.0f))};
     activeModel = model3ds.front();
 
     for (Model3D* model : model3ds) model->loadModel();
     //* - - - - - END OF MODEL LOADING - - - - -
 
+    //* - - - - - PARTICLES - - - - -
+    particles = {new MyParticle()};
+    // particles[0]->setPosition(0.0f, 1199.0f, 0.0f);
+    // particles[0]->setVelocity(100.0f, 0.0f, 0.0f);
+    // particles[0]->setAcceleration(-30.0f, 0.0f, 0.0f);
+
+    //* Gravity
+    for (MyParticle* particle : particles) {
+        particle->setAcceleration(0.0f, -50.0f, 0.0f);
+    }
+    //* - - - - - END OF PARTICLES - - - - -
+
+    //* - - - - - PRE-RUNTIME - - - - -
+    MyVector3 initialVelocity = MyVector3(0.0f);
+    //* - - - - - ASSIGNMENT 3 - - - - -
+    bool bLanded              = false;
+
+    cout << "Set Initial Velocity: " << endl;
+    cout << "X: ";
+    cin >> initialVelocity.x;
+    cout << "Y: ";
+    cin >> initialVelocity.y;
+    cout << "Z: ";
+    cin >> initialVelocity.z;
+
+    particles[0]->setPosition(0.0f, 1.0f, 0.0f);
+    particles[0]->setVelocity(MyVector3(initialVelocity));
+    //* - - - - - END OF ASSIGNMENT 3 - - - - -
+
+    timerClockStart   = timerClock::now();
+    //* - - - - - END OF PRE-RUNTIME - - - - -
+
     //* - - - - - RUNTIME - - - - -
+    auto currentTime  = physicsClock::now();
+    auto previousTime = currentTime;
+
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         activeCamera->setView(
             glm::lookAt(activeCamera->getPosition(), activeCamera->getViewCenter(), WorldUp));
 
-        //* - - - - - UPDATE - - - - -
+        //* - - - - - FIXED UPDATE - - - - -
+        currentTime   = physicsClock::now();
+        auto duration = duration_cast<nanoseconds>(currentTime - previousTime);
+        previousTime  = currentTime;
 
+        currentNanosecond += duration;
+        if (currentNanosecond >= TIMESTEP) {
+            auto millisecond = duration_cast<milliseconds>(currentNanosecond);
+            if (false) cout << "Millisecond: " << (float)millisecond.count() << endl;
+
+            //? Place physics related updates BELOW this line
+            if (false) cout << "Physics Update" << endl;
+
+            if (particles[0]->getPosition().getY() <= 0.0f && !bLanded) {
+                bLanded       = true;
+                timerClockEnd = timerClock::now();
+                cout
+                    << "It took "
+                    << (float)duration_cast<milliseconds>(timerClockEnd - timerClockStart).count() /
+                           1000
+                    << " seconds for it to land." << endl;
+            } else {
+                particles[0]->update((float)millisecond.count() / 1000);
+            }
+            //? Place physics related updates ABOVE this line
+
+            currentNanosecond -= currentNanosecond;
+        }
+        //* - - - - - END OF FIXED UPDATE - - - - -
+
+        //* - - - - - UPDATE - - - - -
+        if (false) cout << "Normal Update" << endl;
+        activeModel->setPosition((glm::vec3)particles[0]->getPosition());
         //* - - - - - END OF UPDATE - - - - -
 
         //* - - - - - SKYBOX SHADER SWITCH - - - - -
@@ -325,6 +415,10 @@ int main(void) {
         GLuint cameraPositionAddress =
             glGetUniformLocation(lightingShaderProgram, "cameraPosition");
         glUniform3fv(cameraPositionAddress, 1, glm::value_ptr(activeCamera->getPosition()));
+        if (false)
+            cout << "Active Camera Position: [" << activeCamera->getPosition().x << ", "
+                 << activeCamera->getPosition().y << ", " << activeCamera->getPosition().z << "]"
+                 << endl;
         //* - - - - - END OF CAMERA UPDATE - - - - -
 
         //* - - - - - MODEL UPDATE - - - - -

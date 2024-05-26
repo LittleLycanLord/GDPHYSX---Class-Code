@@ -13,6 +13,11 @@ MyVector3::MyVector3(double x, double y, double z) : x(x), y(y), z(z){};
 //* ╔═════════╗
 //* ║ Methods ║
 //* ╚═════════╝
+void MyVector3::DisplayValues(std::string message) {
+    cout << message << " -> " << "X: " << this->x << ", Y: " << this->y << ", Z: " << this->z
+         << endl;
+}
+
 //? Vector Operations
 MyVector3 MyVector3::operator+(const MyVector3 addend) {
     return MyVector3(this->x + addend.x, this->y + addend.y, this->z + addend.z);

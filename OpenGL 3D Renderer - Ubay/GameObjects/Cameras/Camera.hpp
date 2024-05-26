@@ -1,4 +1,8 @@
 #pragma once
+// clang-format off
+#include "glad/glad.h"
+#include "GLFW/glfw3.h"
+// clang-format on
 #include "stdafx.h"
 
 namespace models {
@@ -13,16 +17,21 @@ protected:
     glm::mat4 view;
     glm::mat4 projection;
     glm::vec3 viewCenter;
+    glm::vec3 moveSpeed;
 
     //* ╔═══════════════════════════════╗
     //* ║ Constructors & Deconstructors ║
     //* ╚═══════════════════════════════╝
 public:
     Camera(std::string name, glm::mat4 projection, glm::vec3 position, glm::vec3 viewCenter);
+
     //* ╔═════════╗
     //* ║ Methods ║
     //* ╚═════════╝
-    
+public:
+    virtual void CameraMovement(int key, int action, int mods);
+    virtual void OtherInputs(int key, int action, int mods) = 0;
+
     //* ╔═══════════════════╗
     //* ║ Getters & Setters ║
     //* ╚═══════════════════╝

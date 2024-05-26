@@ -26,6 +26,8 @@ public:
     //* ║ Methods ║
     //* ╚═════════╝
 public:
+    void OtherInputs(int key, int action, int mods);
+
     //* ╔═══════════════════╗
     //* ║ Getters & Setters ║
     //* ╚═══════════════════╝
