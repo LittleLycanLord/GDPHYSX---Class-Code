@@ -9,12 +9,16 @@ using namespace std;
 MyVector2::MyVector2() : x(0), y(0){};
 MyVector2::MyVector2(double xy) : x(xy), y(xy){};
 MyVector2::MyVector2(double x, double y) : x(x), y(y){};
-
+MyVector2::MyVector2(glm::vec2 xy) : x(xy.x), y(xy.y) {}
 //* ╔═════════╗
 //* ║ Methods ║
 //* ╚═════════╝
-void MyVector2::DisplayValues(std::string message) {
-    cout << message << " -> " << "X: " << this->x << ", Y: " << this->y << endl;
+void MyVector2::DisplayValuesIndividually(std::string message, int precision) {
+    cout << fixed << setprecision(precision) << message << " -> " << "X: " << this->x << ", Y: " << this->y
+         << endl;
+}
+void MyVector2::DisplayValues(int precision) {
+    cout << fixed << setprecision(precision) << "(" << this->x << ", " << this->y << ")";
 }
 
 //? Vector Operations
@@ -92,4 +96,3 @@ double MyVector2::getX() { return this->x; }
 void MyVector2::setX(double x) { this->x = x; }
 double MyVector2::getY() { return this->y; }
 void MyVector2::setY(double y) { this->y = y; }
-glm::vec2 MyVector2::getAsGLMVec2() { return glm::vec2(this->x, this->y); }

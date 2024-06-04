@@ -19,7 +19,7 @@
 #include "GameObjects/Player/Player.hpp"
 #include "GameObjects/Shader/Shader.hpp"
 #include "stdafx.h"
-// clang-format on
+// clang-format on                       
 
 using namespace std;
 using namespace chrono;
@@ -48,7 +48,7 @@ Player* player                              = NULL;
 using physicsClock                          = high_resolution_clock;
 using timerClock                            = steady_clock;
 auto timerClockStart                        = timerClock::now();
-auto timerClockEnd                          = timerClock::now();
+auto timerClockMark                         = timerClock::now();
 nanoseconds currentNanosecond(0);
 MyPhysicsWorld physicsWorld = MyPhysicsWorld();
 //* - - - - - END OF PHYSICS - - - - -
@@ -226,23 +226,24 @@ int main(void) {
                                       1000.0f)};
     if (ONE_PIXEL_PER_METER) {
         if (POSITIVE_Y_ONLY) {
-            cameras.push_back(new OrthographicCamera("Main",
-                                                     glm::vec3(0.0f, WINDOW_WIDTH, 0.0f),
-                                                     glm::vec3(0.0f, WINDOW_WIDTH, -1.0f),
-                                                     -WINDOW_WIDTH,
-                                                     WINDOW_WIDTH,
-                                                     -WINDOW_WIDTH,
-                                                     WINDOW_WIDTH,
-                                                     0.001f,
-                                                     1000.0f));
+            cameras.push_back(
+                new OrthographicCamera("Main",
+                                       glm::vec3(0.0f, WINDOW_WIDTH, WINDOW_WIDTH / 2),
+                                       glm::vec3(0.0f, WINDOW_WIDTH, 0.0f),
+                                       -WINDOW_WIDTH / 2,
+                                       WINDOW_WIDTH / 2,
+                                       -WINDOW_WIDTH / 2,
+                                       WINDOW_WIDTH / 2,
+                                       0.001f,
+                                       1000.0f));
         } else {
             cameras.push_back(new OrthographicCamera("Main",
+                                                     glm::vec3(0.0f, 0.0f, WINDOW_WIDTH / 2),
                                                      glm::vec3(0.0f, 0.0f, 0.0f),
-                                                     glm::vec3(0.0f, 0.0f, -1.0f),
-                                                     -WINDOW_WIDTH,
-                                                     WINDOW_WIDTH,
-                                                     -WINDOW_WIDTH,
-                                                     WINDOW_WIDTH,
+                                                     -WINDOW_WIDTH / 2,
+                                                     WINDOW_WIDTH / 2,
+                                                     -WINDOW_WIDTH / 2,
+                                                     WINDOW_WIDTH / 2,
                                                      0.001f,
                                                      1000.0f));
         }
@@ -319,16 +320,23 @@ int main(void) {
        // new MyParticle()
     };
 
-    renderParticles = {new MyRenderParticle(MyVector3(0.0f, 1.0f, 0.0f))};
+    renderParticles =
+        // ASSIGNMENT 3: {new MyRenderParticle(MyVector3(1.0f, 1.0f, 1.0f))
+        // PROGRAMMING CHALLENGE 1:
+        {new MyRenderParticle(MyVector3(1.0f, 0.0f, 0.0f)),
+         new MyRenderParticle(MyVector3(0.0f, 1.0f, 0.0f)),
+         new MyRenderParticle(MyVector3(0.0f, 0.0f, 1.0f)),
+         new MyRenderParticle(MyVector3(1.0f, 1.0f, 0.0f))};
+
+    if (ORIGIN_MARKER) renderParticles.push_back(new MyRenderParticle(MyVector3(1.0f, 1.0f, 1.0f)));
+
     for (MyRenderParticle* renderParticle : renderParticles) {
         particles.push_back(renderParticle);
     }
 
-    particles[0]->setUsesGravity(true);
-
     //* Gravity
     for (MyParticle* particle : particles) {
-        if (particle->getUsesGravity()) particle->setAcceleration(0.0f, -50.0f, 0.0f);
+        // if (particle->getUsesGravity()) particle->setAcceleration(0.0f, -50.0f, 0.0f);
     }
 
     for (MyParticle* particle : particles) {
@@ -357,28 +365,52 @@ int main(void) {
     //* - - - - - END OF MODEL LOADING - - - - -
 
     //* - - - - - PRE-RUNTIME - - - - -
-    MyVector3 initialVelocity = MyVector3(0.0f);
     //* - - - - - ASSIGNMENT 3 - - - - -
-    bool bLanded              = false;
+    // MyVector3 initialVelocity = MyVector3(0.0f);
+    // bool bLanded              = false;
 
-    cout << "Set Initial Velocity: " << endl;
-    cout << "X: ";
-    cin >> initialVelocity.x;
-    cout << "Y: ";
-    cin >> initialVelocity.y;
-    cout << "Z: ";
-    cin >> initialVelocity.z;
-    cout << "Particle Count: " << particles.size() << endl;
-    particles[0]->setPosition(0.0f, 1.0f, 0.0f);
-    particles[0]->setVelocity(MyVector3(initialVelocity));
+    // cout << "Set Initial Velocity: " << endl;
+    // cout << "X: ";
+    // cin >> initialVelocity.x;
+    // cout << "Y: ";
+    // cin >> initialVelocity.y;
+    // cout << "Z: ";
+    // cin >> initialVelocity.z;
+    // cout << "Particle Count: " << particles.size() << endl;
+    // particles[0]->setPosition(0.0f, 1.0f, 0.0f);
+    // particles[0]->setVelocity(MyVector3(initialVelocity));
     //* - - - - - END OF ASSIGNMENT 3 - - - - -
 
-    timerClockStart   = timerClock::now();
+    //* - - - - - PROGRAMMING CHALLENGE 1 - - - - -
+    // Red Particle
+    particles[0]->setPosition(MyVector3(-350.0f, 350.0f, 201.0f));
+    particles[0]->moveTowards(MyVector3(0.0f), 80.0f);
+    particles[0]->setAcceleration(MyVector3(14.5f));
+
+    // Green Particle
+    particles[1]->setPosition(MyVector3(350.0f, 350.0f, 173.0f));
+    particles[1]->moveTowards(MyVector3(0.0f), 90.0f);
+    particles[1]->setAcceleration(MyVector3(-8.0f));
+
+    // Blue Particle
+    particles[2]->setPosition(MyVector3(350.0f, -350.0f, -300.0f));
+    particles[2]->moveTowards(MyVector3(0.0f), 130.0f);
+    particles[2]->setAcceleration(MyVector3(-1.0f));
+
+    // Yellow Particle
+    particles[3]->setPosition(MyVector3(-350.0f, -350.0f, -150.0f));
+    particles[3]->moveTowards(MyVector3(0.0f), 110.0f);
+    particles[3]->setAcceleration(MyVector3(3.0f));
+
+    int particlesPastCenter = 0;
+    //* - - - - - END OF PROGRAMMING CHALLENGE 1 - - - - -
+
+    timerClockStart         = timerClock::now();
     //* - - - - - END OF PRE-RUNTIME - - - - -
 
     //* - - - - - RUNTIME - - - - -
-    auto currentTime  = physicsClock::now();
-    auto previousTime = currentTime;
+    auto currentTime        = physicsClock::now();
+    auto previousTime       = currentTime;
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -392,25 +424,130 @@ int main(void) {
         previousTime  = currentTime;
 
         currentNanosecond += duration;
+
         if (currentNanosecond >= TIMESTEP) {
             auto millisecond = duration_cast<milliseconds>(currentNanosecond);
             if (false) cout << "Millisecond: " << (float)millisecond.count() << endl;
-
-            //? Place physics related updates BELOW this line
             if (false) cout << "Physics Update" << endl;
 
-            if (particles[0]->getPosition().getY() <= 0.0f && !bLanded) {
-                bLanded       = true;
-                timerClockEnd = timerClock::now();
-                cout
-                    << "It took "
-                    << (float)duration_cast<milliseconds>(timerClockEnd - timerClockStart).count() /
-                           1000
-                    << " seconds for it to land." << endl;
-            } else {
-                physicsWorld.update((float)millisecond.count() / 1000);
+            //? Place physics related updates BELOW this line
+            //* - - - - - ASSIGNMENT 3 - - - - -
+            // if (particles[0]->getPosition().getY() <= 0.0f && !bLanded) {
+            //     bLanded       = true;
+            //     timerClockMark = timerClock::now();
+            //     cout
+            //         << "It took "
+            //         << (float)duration_cast<milliseconds>(timerClockMark -
+            //         timerClockStart).count() /
+            //                1000
+            //         << " seconds for it to land." << endl;
+            // } else {
+            //     physicsWorld.update((float)millisecond.count() / 1000);
+            // }
+            //* - - - - - END OF ASSIGNMENT 3 - - - - -
+            //* - - - - - PROGRAMMING CHALLENGE 3 - - - - -
+            vector<float> particleDistancesBeforeUpdate = {};
+            for (MyParticle* particle : particles) {
+                //? Distance Formula for 2 Points in 3 Dimensions
+                particleDistancesBeforeUpdate.push_back(
+                    sqrt(pow((0.0f - particle->getPosition().x), 2) +
+                         pow((0.0f - particle->getPosition().y), 2) +
+                         pow((0.0f - particle->getPosition().z), 2)));
+            }
+            physicsWorld.update((float)millisecond.count() / 1000);
+            vector<float> particleDistancesAfterUpdate = {};
+            for (MyParticle* particle : particles) {
+                //? Distance Formula for 2 Points in 3 Dimensions
+                particleDistancesAfterUpdate.push_back(
+                    sqrt(pow((0.0f - particle->getPosition().x), 2) +
+                         pow((0.0f - particle->getPosition().y), 2) +
+                         pow((0.0f - particle->getPosition().z), 2)));
+            }
+            timerClockMark = timerClock::now();
+            if (DEBUG_MODE_PROGRAMMING_CHALLENGE_1) {
+                cout << "Distances: ";
+                for (int i = 0; i < particleDistancesBeforeUpdate.size(); i++) {
+                    cout << fixed << setprecision(COUT_PRECISION)
+                         << particleDistancesBeforeUpdate[i] << "m |";
+                }
+                cout << "---";
+                cout << "Speeds: ";
+                for (int i = 0; i < particleDistancesBeforeUpdate.size(); i++) {
+                    cout << fixed << setprecision(COUT_PRECISION)
+                         << particles[i]->getMagnitudeVelocity() << "m/s |";
+                }
+                cout << " at time: "
+                     << (float)duration_cast<milliseconds>(timerClockMark - timerClockStart)
+                                .count() /
+                            1000
+                     << endl;
             }
 
+            //? Logic: At the frame where the distance between the particle and the center
+            //? increases, given that they will be travelling in one direction towards it, will
+            //? mean that they have passed the center at that frame.
+
+            for (int i = 0; i < particleDistancesBeforeUpdate.size(); i++) {
+                if (particleDistancesBeforeUpdate[i] < particleDistancesAfterUpdate[i]) {
+                    particlesPastCenter++;
+                    switch (i) {
+                        case 0:  //? Red
+                            cout << "Red: ";
+                            break;
+                        case 1:  //? Green
+                            cout << "Green: ";
+                            break;
+                        case 2:  //? Blue
+                            cout << "Blue: ";
+                            break;
+                        case 3:  //? Yellow
+                            cout << "Yellow: ";
+                            break;
+                    }
+                    cout << particlesPastCenter;
+                    switch (particlesPastCenter) {
+                        case 1:
+                            cout << "st";
+                            break;
+                        case 2:
+                            cout << "nd";
+                            break;
+                        case 3:
+                            cout << "rd";
+                            break;
+                        case 4:
+                            cout << "th";
+                            break;
+                    }
+                    if (DEBUG_MODE_PROGRAMMING_CHALLENGE_1) {
+                        cout << " at ";
+                        particles[i]->getPosition().DisplayValues(COUT_PRECISION);
+                        cout << " after it was from ";
+                        MyVector3 previousPosition =
+                            MyVector3(particles[i]->getPosition() - particles[i]->getVelocity());
+                        previousPosition.DisplayValues(COUT_PRECISION);
+                    }
+                    cout << endl;
+                    cout << fixed << setprecision(COUT_PRECISION)
+                         << "Mag. of Velocity: " << particles[i]->getMagnitudeVelocity() << "m/s"
+                         << endl;
+                    cout << "Average Velocity: ";
+                    particles[i]->getAverageVelocity().DisplayValues(COUT_PRECISION);
+                    cout << "m/s" << endl;
+                    timerClockMark = timerClock::now();
+                    cout << "It took "
+                         << (float)duration_cast<milliseconds>(timerClockMark - timerClockStart)
+                                    .count() /
+                                1000
+                         << " seconds for it to reach the center." << endl
+                         << endl;
+                    particles[i]->stop();
+                }
+            }
+
+            //* - - - - - END OF PROGRAMMING CHALLENGE 3 - - - - -
+
+            //? Comment this update call when using a template above
             // physicsWorld.update((float)millisecond.count() / 1000);
             //? Place physics related updates ABOVE this line
 
@@ -479,9 +616,12 @@ int main(void) {
             if (model->getName() == "DEFAULT PARTICLE") {
                 GLuint modelColorAddress = glGetUniformLocation(lightingShaderProgram, "modelTint");
                 glUniform3fv(modelColorAddress, 1, glm::value_ptr(model->getTint()));
-                if (DEBUG_MODE_MODEL_TINTING)
-                    cout << "Tinted " << model->getName() << " with Color(" << model->getTint().x
-                         << ", " << model->getTint().y << ", " << model->getTint().z << ")" << endl;
+                if (DEBUG_MODE_MODEL_TINTING) {
+                    cout << "Tinted " << model->getName() << " with Color";
+                    MyVector3 tint(model->getTint());
+                    tint.DisplayValues(COUT_PRECISION);
+                    cout << endl;
+                }
             }
 
             glActiveTexture(GL_TEXTURE0);

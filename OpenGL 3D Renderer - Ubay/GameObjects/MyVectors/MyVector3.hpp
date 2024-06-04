@@ -1,6 +1,7 @@
 #pragma once
 #include "MyVector2.hpp"
 #include "glad/glad.h"
+#include "iomanip"
 #include "stdafx.h"
 
 namespace MyPhysics {
@@ -20,12 +21,14 @@ public:
     MyVector3();
     MyVector3(double xyz);
     MyVector3(double x, double y, double z);
+    MyVector3(glm::vec3 xyz);
 
     //* ╔═════════╗
     //* ║ Methods ║
     //* ╚═════════╝
 public:
-    void DisplayValues(std::string message);
+    void DisplayValuesIndividually(std::string message, int precision);
+    void DisplayValues(int precision);
 
     //? Custom Typecast Override
     explicit operator glm::vec3() const { return glm::vec3(this->x, this->y, this->z); }
@@ -62,6 +65,5 @@ public:
     void setY(double y);
     double getZ();
     void setZ(double z);
-    glm::vec3 getAsGLMVec3();
 };
 }  // namespace MyPhysics

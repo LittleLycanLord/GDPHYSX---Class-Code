@@ -9,13 +9,17 @@ using namespace std;
 MyVector3::MyVector3() : x(0), y(0), z(0){};
 MyVector3::MyVector3(double xyz) : x(xyz), y(xyz), z(xyz){};
 MyVector3::MyVector3(double x, double y, double z) : x(x), y(y), z(z){};
+MyVector3::MyVector3(glm::vec3 xyz) : x(xyz.x), y(xyz.y), z(xyz.z) {}
 
 //* ╔═════════╗
 //* ║ Methods ║
 //* ╚═════════╝
-void MyVector3::DisplayValues(std::string message) {
-    cout << message << " -> " << "X: " << this->x << ", Y: " << this->y << ", Z: " << this->z
-         << endl;
+void MyVector3::DisplayValuesIndividually(std::string message, int precision) {
+    cout << fixed << setprecision(precision) << message << " -> " << "X: " << this->x << ", Y: " << this->y
+         << ", Z: " << this->z << endl;
+}
+void MyVector3::DisplayValues(int precision) {
+    cout << fixed << setprecision(precision) << "(" << this->x << ", " << this->y << ", " << this->z << ")";
 }
 
 //? Vector Operations
@@ -110,4 +114,3 @@ double MyVector3::getY() { return this->y; }
 void MyVector3::setY(double y) { this->y = y; }
 double MyVector3::getZ() { return this->z; }
 void MyVector3::setZ(double z) { this->z = z; }
-glm::vec3 MyVector3::getAsGLMVec3() { return glm::vec3(this->x, this->y, this->z); }

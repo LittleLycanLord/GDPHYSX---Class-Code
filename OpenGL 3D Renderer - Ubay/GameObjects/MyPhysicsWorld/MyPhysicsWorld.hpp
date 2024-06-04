@@ -12,6 +12,7 @@ class MyPhysicsWorld {
     //* ╚════════════╝
 public:
     list<MyParticle*> particles;
+    int updateCount;
     //* ╔═══════════════════════════════╗
     //* ║ Constructors & Deconstructors ║
     //* ╚═══════════════════════════════╝

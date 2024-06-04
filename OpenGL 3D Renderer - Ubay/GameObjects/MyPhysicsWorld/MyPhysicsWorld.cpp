@@ -5,16 +5,17 @@ using namespace MyPhysics;
 //* ╔═══════════════════════════════╗
 //* ║ Constructors & Deconstructors ║
 //* ╚═══════════════════════════════╝
-MyPhysicsWorld::MyPhysicsWorld() {}
+MyPhysicsWorld::MyPhysicsWorld() : updateCount(0) {}
 //* ╔═════════╗
 //* ║ Methods ║
 //* ╚═════════╝
 void MyPhysicsWorld::update(float time) {
     this->updateParticleList();
+    this->updateCount++;
     for (list<MyParticle*>::iterator particle = this->particles.begin();
          particle != this->particles.end();
          particle++) {
-        (*particle)->update(time);
+        (*particle)->update(time, updateCount);
     }
 }
 void MyPhysicsWorld::addParticle(MyParticle* particleToAdd) {

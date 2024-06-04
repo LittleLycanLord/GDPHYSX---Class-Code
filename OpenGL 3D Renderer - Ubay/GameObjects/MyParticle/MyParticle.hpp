@@ -13,6 +13,9 @@ protected:
     bool isDestroyed;
     bool usesGravity;
     MyVector3 position;
+    double magnitudeVelocity;
+    MyVector3 totalVelocity;
+    MyVector3 averageVelocity;
     MyVector3 velocity;
     MyVector3 acceleration;
 
@@ -31,9 +34,12 @@ protected:
     virtual void updateModel();
     void updatePosition(double time);
     void updateVelocity(double time);
+    void updateAverageVelocity(int physicsUpdateCount);
 
 public:
-    void update(double time);
+    void update(double time, int physicsUpdateCount);
+    void moveTowards(MyVector3 target, double magnitudeVelocity);
+    void stop();
     void destroy();
 
     //* ╔═══════════════════╗
@@ -48,6 +54,8 @@ public:
     MyVector3 getPosition();
     void setPosition(MyVector3 position);
     void setPosition(double x, double y, double z);
+    double getMagnitudeVelocity();
+    MyVector3 getAverageVelocity();
     MyVector3 getVelocity();
     void setVelocity(MyVector3 velocity);
     void setVelocity(double x, double y, double z);
