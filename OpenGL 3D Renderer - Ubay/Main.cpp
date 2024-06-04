@@ -12,6 +12,8 @@
 #include "GameObjects/Lights/PointLight/PointLight.hpp"
 #include "GameObjects/MyTexture/MyTexture.hpp"
 #include "GameObjects/MyParticle/MyParticle.hpp"
+#include "GameObjects/MyParticle/MyRenderParticle/MyRenderParticle.hpp"
+#include "GameObjects/MyPhysicsWorld/MyPhysicsWorld.hpp"
 #include "GameObjects/MyNormal/MyNormal.hpp"
 #include "GameObjects/Model3D/Model3D.hpp"
 #include "GameObjects/Player/Player.hpp"
@@ -30,13 +32,14 @@ vector<PointLight*> pointLights             = {};
 vector<SpotLight*> spotLights               = {};
 vector<Light*> lights                       = {};
 
-vector<Model3D*> model3ds                   = {};
+list<Model3D*> model3ds                     = {};
 Model3D* activeModel                        = NULL;
 
 vector<Camera*> cameras                     = {};
 Camera* activeCamera                        = NULL;
 
 vector<MyParticle*> particles               = {};
+vector<MyRenderParticle*> renderParticles   = {};
 
 Player* player                              = NULL;
 //* - - - - - END OF POINTERS AND CONTAINERS - - - - -
@@ -47,7 +50,12 @@ using timerClock                            = steady_clock;
 auto timerClockStart                        = timerClock::now();
 auto timerClockEnd                          = timerClock::now();
 nanoseconds currentNanosecond(0);
+MyPhysicsWorld physicsWorld = MyPhysicsWorld();
 //* - - - - - END OF PHYSICS - - - - -
+
+void updateModelsList() {
+    model3ds.remove_if([](Model3D* model) { return model->getIsDestroyed(); });
+}
 
 //? Reserved GLFW Function for Keyboard Inputs
 void Key_Callback(
@@ -283,31 +291,47 @@ int main(void) {
 
     //* - - - - - END OF LIGHTS - - - - -
 
-    //* - - - - - MODEL LOADING - - - - -
-    model3ds    = {new Model3D("Sphere",
-                            "Assets/Models/sphere.obj",
-                            "Assets/Default.png",
-                            "",
-                            glm::vec3(0.0f, 0.0f, 0.0f),
-                            glm::mat4(1.0f),
-                            glm::vec3(3.0f),
-                            glm::vec3(0.0f))};
-    activeModel = model3ds.front();
-
-    for (Model3D* model : model3ds) model->loadModel();
-    //* - - - - - END OF MODEL LOADING - - - - -
-
     //* - - - - - PARTICLES - - - - -
-    particles = {new MyParticle()};
-    // particles[0]->setPosition(0.0f, 1199.0f, 0.0f);
-    // particles[0]->setVelocity(100.0f, 0.0f, 0.0f);
-    // particles[0]->setAcceleration(-30.0f, 0.0f, 0.0f);
+    particles = {
+       // new MyParticle()
+    };
+
+    renderParticles = {new MyRenderParticle(MyVector3(1.0f, 0.0f, 0.0f))};
+    for (MyRenderParticle* renderParticle : renderParticles) {
+        particles.push_back(renderParticle);
+    }
+
+    particles[0]->setUsesGravity(true);
 
     //* Gravity
     for (MyParticle* particle : particles) {
-        particle->setAcceleration(0.0f, -50.0f, 0.0f);
+        if (particle->getUsesGravity()) particle->setAcceleration(0.0f, -50.0f, 0.0f);
+    }
+
+    for (MyParticle* particle : particles) {
+        physicsWorld.addParticle(particle);
     }
     //* - - - - - END OF PARTICLES - - - - -
+
+    //* - - - - - MODEL LOADING - - - - -
+    model3ds = {
+       // new Model3D("Sphere",
+       //                     "Assets/Models/sphere.obj",
+       //                     "Assets/Default.png",
+       //                     "",
+       //                     glm::vec3(0.0f, 0.0f, 0.0f),
+       //                     glm::mat4(1.0f),
+       //                     glm::vec3(3.0f),
+       //                     glm::vec3(0.0f))
+    };
+    for (MyRenderParticle* renderParticle : renderParticles) {
+        model3ds.push_back(renderParticle->getModel3D());
+    }
+    cout << model3ds.front()->getName() << endl;
+    if (!model3ds.empty()) activeModel = model3ds.front();
+
+    for (Model3D* model : model3ds) model->loadModel();
+    //* - - - - - END OF MODEL LOADING - - - - -
 
     //* - - - - - PRE-RUNTIME - - - - -
     MyVector3 initialVelocity = MyVector3(0.0f);
@@ -321,7 +345,7 @@ int main(void) {
     cin >> initialVelocity.y;
     cout << "Z: ";
     cin >> initialVelocity.z;
-
+    cout << "Particle Count: " << particles.size() << endl;
     particles[0]->setPosition(0.0f, 1.0f, 0.0f);
     particles[0]->setVelocity(MyVector3(initialVelocity));
     //* - - - - - END OF ASSIGNMENT 3 - - - - -
@@ -361,8 +385,10 @@ int main(void) {
                            1000
                     << " seconds for it to land." << endl;
             } else {
-                particles[0]->update((float)millisecond.count() / 1000);
+                physicsWorld.update((float)millisecond.count() / 1000);
             }
+
+            // physicsWorld.update((float)millisecond.count() / 1000);
             //? Place physics related updates ABOVE this line
 
             currentNanosecond -= currentNanosecond;
@@ -371,7 +397,6 @@ int main(void) {
 
         //* - - - - - UPDATE - - - - -
         if (false) cout << "Normal Update" << endl;
-        activeModel->setPosition((glm::vec3)particles[0]->getPosition());
         //* - - - - - END OF UPDATE - - - - -
 
         //* - - - - - SKYBOX SHADER SWITCH - - - - -
@@ -422,9 +447,18 @@ int main(void) {
         //* - - - - - END OF CAMERA UPDATE - - - - -
 
         //* - - - - - MODEL UPDATE - - - - -
+        updateModelsList();
         for (Model3D* model : model3ds) {
             //* - - - - - MODEL LIGHTING - - - - -
             glBindVertexArray(*model->getVAO());
+
+            //* Model Tinting
+            if (model->getName() == "DEFAULT PARTICLE") {
+                GLuint modelColorAddress = glGetUniformLocation(lightingShaderProgram, "modelTint");
+                glUniform3fv(modelColorAddress, 1, glm::value_ptr(model->getTint()));
+                cout << "Tinted " << model->getName() << " with Color(" << model->getTint().x
+                     << ", " << model->getTint().y << ", " << model->getTint().z << ")" << endl;
+            }
 
             glActiveTexture(GL_TEXTURE0);
             GLuint modelTextureAddress =

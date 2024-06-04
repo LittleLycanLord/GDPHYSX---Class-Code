@@ -11,6 +11,7 @@ class Model3D {
     //* ║ Attributes ║
     //* ╚════════════╝
 protected:
+    bool isDestroyed;
     std::string name;
     bool enabled;
     MyTexture texture;
@@ -18,6 +19,7 @@ protected:
     std::string texturePath;
     std::string normalPath;
     std::string modelPath;
+    glm::vec3 tint;
     glm::vec3 position;
     glm::mat4 positionMatrix;
     glm::vec3 scale;
@@ -40,6 +42,15 @@ public:
             glm::mat4 positionMatrix,
             glm::vec3 scale,
             glm::vec3 orientation);
+    Model3D(std::string name,
+            std::string modelPath,
+            std::string texturePath,
+            std::string normalPath,
+            glm::vec3 tint,
+            glm::vec3 position,
+            glm::mat4 positionMatrix,
+            glm::vec3 scale,
+            glm::vec3 orientation);
 
     //* ╔═════════╗
     //* ║ Methods ║
@@ -48,17 +59,21 @@ public:
     void loadModel();
     void update();
     void updatePositionMatrix();
+    void destroy();
 
     //* ╔═══════════════════╗
     //* ║ Getters & Setters ║
     //* ╚═══════════════════╝
 public:
+    bool getIsDestroyed();
     std::string getName();
     void setName(std::string name);
     bool getEnabled();
     void setEnabled(bool enabled);
     MyTexture getTexture();
     MyNormal getNormalMap();
+    glm::vec3 getTint();
+    void setTint(glm::vec3 tint);
     glm::vec3 getPosition();
     void setPosition(glm::vec3 position);
     glm::mat4 getPositionMatrix();

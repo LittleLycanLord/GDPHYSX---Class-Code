@@ -9,6 +9,7 @@ in vec3 fragmentPosition;
 in mat3 TBN;
 
 uniform sampler2D modelTexture;
+uniform vec3 modelTint;
 uniform sampler2D modelNormalTexture;
 
 uniform vec3 lightPosition;
@@ -163,5 +164,8 @@ void main() {
    
 
     //                       - Use Lighting -                     - Use Texture -
-    FragmentColor = FragmentColor * texture(modelTexture, textureCoordinate);
+    // FragmentColor = (FragmentColor * texture(modelTexture, textureCoordinate));
+    FragmentColor = vec4(clamp((FragmentColor * texture(modelTexture, textureCoordinate)).x + modelTint.x, 0.0f, 1.0f), 
+                         clamp((FragmentColor * texture(modelTexture, textureCoordinate)).y + modelTint.y, 0.0f, 1.0f), 
+                         clamp((FragmentColor * texture(modelTexture, textureCoordinate)).z + modelTint.z, 0.0f, 1.0f), 1.0f);
 }

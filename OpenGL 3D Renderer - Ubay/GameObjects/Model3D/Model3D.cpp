@@ -14,13 +14,43 @@ Model3D::Model3D(std::string name,
                  glm::mat4 positionMatrix,
                  glm::vec3 scale,
                  glm::vec3 orientation)
-    : name(name),
+    : isDestroyed(false),
+      name(name),
       enabled(true),
       texture(texturePath),
       normalMap(normalPath),
       texturePath(texturePath),
       normalPath(normalPath),
       modelPath(modelPath),
+      tint(glm::vec3(1.0f)),
+      position(position),
+      positionMatrix(positionMatrix),
+      scale(scale),
+      orientation(orientation),
+      fullVertexData({}),
+      tangents({}),
+      bitangents({}),
+      VAO(0),
+      VBO(0) {}
+
+Model3D::Model3D(std::string name,
+                 std::string modelPath,
+                 std::string texturePath,
+                 std::string normalPath,
+                 glm::vec3 tint,
+                 glm::vec3 position,
+                 glm::mat4 positionMatrix,
+                 glm::vec3 scale,
+                 glm::vec3 orientation)
+    : isDestroyed(false),
+      name(name),
+      enabled(true),
+      texture(texturePath),
+      normalMap(normalPath),
+      texturePath(texturePath),
+      normalPath(normalPath),
+      modelPath(modelPath),
+      tint(tint),
       position(position),
       positionMatrix(positionMatrix),
       scale(scale),
@@ -175,16 +205,20 @@ void Model3D::updatePositionMatrix() {
     this->positionMatrix =
         glm::rotate(this->positionMatrix, glm::radians(this->orientation.z), rotateAroundTheZAxis);
 }
+void Model3D::destroy() { this->isDestroyed = true; }
 
 //* ╔═══════════════════╗
 //* ║ Getters & Setters ║
 //* ╚═══════════════════╝
+bool Model3D::getIsDestroyed() { return this->isDestroyed; }
 std::string Model3D::getName() { return this->name; }
 void Model3D::setName(std::string name) { this->name = name; }
 bool Model3D::getEnabled() { return this->enabled; }
 void Model3D::setEnabled(bool enabled) { this->enabled = enabled; }
 MyTexture Model3D::getTexture() { return this->texture; }
 MyNormal Model3D::getNormalMap() { return this->normalMap; }
+glm::vec3 Model3D::getTint() { return this->tint; }
+void Model3D::setTint(glm::vec3 tint) { this->tint = tint; }
 glm::vec3 Model3D::getPosition() { return this->position; }
 void Model3D::setPosition(glm::vec3 position) { this->position = position; }
 glm::mat4 Model3D::getPositionMatrix() { return this->positionMatrix; }

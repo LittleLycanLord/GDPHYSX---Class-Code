@@ -151,6 +151,8 @@
     <ClCompile Include="GameObjects\Model3D\tinyObjLoader.cpp" />
     <ClCompile Include="GameObjects\MyNormal\MyNormal.cpp" />
     <ClCompile Include="GameObjects\MyParticle\MyParticle.cpp" />
+    <ClCompile Include="GameObjects\MyParticle\MyRenderParticle\MyRenderParticle.cpp" />
+    <ClCompile Include="GameObjects\MyPhysicsWorld\MyPhysicsWorld.cpp" />
     <ClCompile Include="GameObjects\MyTexture\MyTexture.cpp" />
     <ClCompile Include="GameObjects\MyTexture\stbi.cpp" />
     <ClCompile Include="GameObjects\MyVectors\MyVector2.cpp" />
@@ -174,6 +176,8 @@
     <ClInclude Include="GameObjects\Model3D\Model3D.hpp" />
     <ClInclude Include="GameObjects\MyNormal\MyNormal.hpp" />
     <ClInclude Include="GameObjects\MyParticle\MyParticle.hpp" />
+    <ClInclude Include="GameObjects\MyParticle\MyRenderParticle\MyRenderParticle.hpp" />
+    <ClInclude Include="GameObjects\MyPhysicsWorld\MyPhysicsWorld.hpp" />
     <ClInclude Include="GameObjects\MyTexture\MyTexture.hpp" />
     <ClInclude Include="GameObjects\MyVectors\MyVector2.hpp" />
     <ClInclude Include="GameObjects\MyVectors\MyVector3.hpp" />
