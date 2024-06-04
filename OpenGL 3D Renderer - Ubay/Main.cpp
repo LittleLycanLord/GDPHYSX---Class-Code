@@ -210,7 +210,7 @@ int main(void) {
     //* - - - - - END OF SKYBOX TEXTURING - - - - -
 
     //* - - - - - CAMERAS - - - - -
-    cameras           = {//    new PerspectiveCamera("Sample Camera",
+    cameras = {//    new PerspectiveCamera("Sample Camera",
                //                          glm::vec3(0.0f, 0.0f, 0.0f),
                //                          glm::vec3(0.0f, 0.0f, -1.0f),
                //                          60.0f,
@@ -224,8 +224,31 @@ int main(void) {
                                       600.0f,
                                       0.001f,
                                       1000.0f)};
+    if (ONE_PIXEL_PER_METER) {
+        if (POSITIVE_Y_ONLY) {
+            cameras.push_back(new OrthographicCamera("Main",
+                                                     glm::vec3(0.0f, WINDOW_WIDTH, 0.0f),
+                                                     glm::vec3(0.0f, WINDOW_WIDTH, -1.0f),
+                                                     -WINDOW_WIDTH,
+                                                     WINDOW_WIDTH,
+                                                     -WINDOW_WIDTH,
+                                                     WINDOW_WIDTH,
+                                                     0.001f,
+                                                     1000.0f));
+        } else {
+            cameras.push_back(new OrthographicCamera("Main",
+                                                     glm::vec3(0.0f, 0.0f, 0.0f),
+                                                     glm::vec3(0.0f, 0.0f, -1.0f),
+                                                     -WINDOW_WIDTH,
+                                                     WINDOW_WIDTH,
+                                                     -WINDOW_WIDTH,
+                                                     WINDOW_WIDTH,
+                                                     0.001f,
+                                                     1000.0f));
+        }
+    }
 
-    activeCamera = cameras.front();
+    activeCamera      = cameras.back();
     //* - - - - - END OF CAMERAS - - - - -
 
     //* - - - - - WORLD FACTS - - - - -
@@ -296,7 +319,7 @@ int main(void) {
        // new MyParticle()
     };
 
-    renderParticles = {new MyRenderParticle(MyVector3(1.0f, 0.0f, 0.0f))};
+    renderParticles = {new MyRenderParticle(MyVector3(0.0f, 1.0f, 0.0f))};
     for (MyRenderParticle* renderParticle : renderParticles) {
         particles.push_back(renderParticle);
     }
@@ -327,8 +350,8 @@ int main(void) {
     for (MyRenderParticle* renderParticle : renderParticles) {
         model3ds.push_back(renderParticle->getModel3D());
     }
-    cout << model3ds.front()->getName() << endl;
-    if (!model3ds.empty()) activeModel = model3ds.front();
+
+    if (!model3ds.empty()) activeModel = model3ds.back();
 
     for (Model3D* model : model3ds) model->loadModel();
     //* - - - - - END OF MODEL LOADING - - - - -
@@ -456,8 +479,9 @@ int main(void) {
             if (model->getName() == "DEFAULT PARTICLE") {
                 GLuint modelColorAddress = glGetUniformLocation(lightingShaderProgram, "modelTint");
                 glUniform3fv(modelColorAddress, 1, glm::value_ptr(model->getTint()));
-                cout << "Tinted " << model->getName() << " with Color(" << model->getTint().x
-                     << ", " << model->getTint().y << ", " << model->getTint().z << ")" << endl;
+                if (DEBUG_MODE_MODEL_TINTING)
+                    cout << "Tinted " << model->getName() << " with Color(" << model->getTint().x
+                         << ", " << model->getTint().y << ", " << model->getTint().z << ")" << endl;
             }
 
             glActiveTexture(GL_TEXTURE0);

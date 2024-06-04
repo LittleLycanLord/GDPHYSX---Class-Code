@@ -6,6 +6,7 @@ using namespace std::chrono_literals;
 //* - - - - - DEBUG - - - - -
 const bool DEBUG_MODE                           = false;
 const bool DEBUG_MODE_CAMERA_MOVEMENT           = true;
+const bool DEBUG_MODE_MODEL_TINTING             = false;
 const bool DEBUG_MODE_MATH                      = true;
 const bool DEBUG_MODE_PHYSICS                   = true;
 //* - - - - - END OF DEBUG - - - - -
@@ -14,6 +15,8 @@ const bool DEBUG_MODE_PHYSICS                   = true;
 const int WINDOW_WIDTH                          = 600;
 const int WINDOW_HEIGHT                         = 600;
 const bool DRAW_SKYBOX                          = false;
+const bool ONE_PIXEL_PER_METER                  = true;
+const bool POSITIVE_Y_ONLY                      = false;
 const double FRAMERATE                          = 60.0f;
 constexpr std::chrono::nanoseconds TIMESTEP     = 16ms;
 
