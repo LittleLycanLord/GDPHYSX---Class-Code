@@ -1,6 +1,4 @@
 #pragma once
-#include "../MyForceGenerator/MyGravityGenerator/MyGravityGenerator.hpp"
-#include "../MyForceRegistry/MyForceRegistry.hpp"
 #include "../MyParticle/MyParticle.hpp"
 #include "stdafx.h"
 
@@ -8,32 +6,25 @@ namespace MyPhysics {
 
 using namespace std;
 
-class MyPhysicsWorld {
+class MyForceGenerator {
     //* ╔════════════╗
     //* ║ Attributes ║
     //* ╚════════════╝
-public:
-    list<MyParticle*> particles;
-    int updateCount;
-    MyForceRegistry forceRegistry;
-    MyGravityGenerator gravityGenerator;
+protected:
 
     //* ╔═══════════════════════════════╗
     //* ║ Constructors & Deconstructors ║
     //* ╚═══════════════════════════════╝
 public:
-    MyPhysicsWorld();
+    MyForceGenerator();
 
     //* ╔═════════╗
     //* ║ Methods ║
     //* ╚═════════╝
 public:
-    void update(float time);
-    void addParticle(MyParticle* particleToAdd);
+    virtual void updateForce(MyParticle* targetParticle, float time);
 
 private:
-    void updateParticleList();
-
     //* ╔═══════════════════╗
     //* ║ Getters & Setters ║
     //* ╚═══════════════════╝

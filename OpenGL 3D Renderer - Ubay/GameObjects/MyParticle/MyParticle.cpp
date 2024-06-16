@@ -5,30 +5,9 @@ using namespace MyPhysics;
 //* ╔═══════════════════════════════╗
 //* ║ Constructors & Deconstructors ║
 //* ╚═══════════════════════════════╝
-MyParticle::MyParticle()
-    : mass(0.0f),
-      isDestroyed(false),
-      usesGravity(false),
-      position(0.0f),
-      magnitudeVelocity(0.0f),
-      velocity(0.0f),
-      acceleration(0.0f) {}
-MyParticle::MyParticle(double mass)
-    : mass(mass),
-      isDestroyed(false),
-      usesGravity(false),
-      position(0.0f),
-      magnitudeVelocity(0.0f),
-      velocity(0.0f),
-      acceleration(0.0f) {}
-MyParticle::MyParticle(double mass, MyVector3 position)
-    : mass(mass),
-      isDestroyed(false),
-      usesGravity(false),
-      position(position),
-      magnitudeVelocity(0.0f),
-      velocity(0.0f),
-      acceleration(0.0f) {}
+MyParticle::MyParticle() : mass(1.0f), position(0.0f) {}
+MyParticle::MyParticle(double mass) : mass(mass), position(0.0f) {}
+MyParticle::MyParticle(double mass, MyVector3 position) : mass(mass), position(position) {}
 
 //* ╔═════════╗
 //* ║ Methods ║
@@ -46,7 +25,9 @@ void MyParticle::updatePosition(double time) {
     this->updateModel();
 }
 void MyParticle::updateVelocity(double time) {
+    this->acceleration += this->accumulatedForce * (1 / this->mass);
     this->velocity = this->velocity + (this->acceleration * time);
+    this->velocity = this->velocity * pow(damping, time);
 }
 void MyParticle::updateAverageVelocity(int physicsUpdateCount) {
     this->totalVelocity += this->velocity;
@@ -56,7 +37,10 @@ void MyParticle::updateAverageVelocity(int physicsUpdateCount) {
 void MyParticle::update(double time, int physicsUpdateCount) {
     this->updatePosition(time);
     this->updateVelocity(time);
+    //* - - - - - ADDITIONAL UPDATES - - - - -
     this->updateAverageVelocity(physicsUpdateCount);
+    //* - - - - - END OF ADDITIONAL UPDATES - - - - -
+    this->resetForce();
 }
 void MyParticle::moveTowards(MyVector3 target, double magnitudeVelocity) {
     this->velocity = MyVector3(
@@ -70,6 +54,11 @@ void MyParticle::moveTowards(MyVector3 target, double magnitudeVelocity) {
             sqrt(pow((target.x - this->position.x), 2) + pow((target.y - this->position.y), 2) +
                  pow((target.z - this->position.z), 2)));
 }
+void MyParticle::addForce(MyVector3 force) { this->accumulatedForce += force; }
+void MyParticle::resetForce() {
+    this->accumulatedForce = MyVector3();
+    this->acceleration     = MyVector3();
+}
 void MyParticle::stop() {
     this->velocity     = MyVector3();
     this->acceleration = MyVector3();
@@ -81,6 +70,8 @@ void MyParticle::destroy() { this->isDestroyed = true; }
 //* ╚═══════════════════╝
 double MyParticle::getMass() { return this->mass; }
 void MyParticle::setMass(double mass) { this->mass = mass; }
+double MyParticle::getDamping() { return this->damping; }
+void MyParticle::setDamping(double damping) { this->damping = damping; }
 bool MyParticle::getIsDestroyed() { return this->isDestroyed; }
 bool MyParticle::getUsesGravity() { return this->usesGravity; }
 void MyParticle::setUsesGravity(bool usesGravity) { this->usesGravity = usesGravity; }

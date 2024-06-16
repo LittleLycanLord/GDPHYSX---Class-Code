@@ -1,6 +1,5 @@
 #pragma once
-#include "../MyForceGenerator/MyGravityGenerator/MyGravityGenerator.hpp"
-#include "../MyForceRegistry/MyForceRegistry.hpp"
+#include "../MyForceGenerator/MyForceGenerator.hpp"
 #include "../MyParticle/MyParticle.hpp"
 #include "stdafx.h"
 
@@ -8,35 +7,40 @@ namespace MyPhysics {
 
 using namespace std;
 
-class MyPhysicsWorld {
+struct MyParticleForceRegistry {
+    MyForceGenerator* generator;
+    MyParticle* particle;
+};
+
+class MyForceRegistry {
     //* ╔════════════╗
     //* ║ Attributes ║
     //* ╚════════════╝
-public:
-    list<MyParticle*> particles;
-    int updateCount;
-    MyForceRegistry forceRegistry;
-    MyGravityGenerator gravityGenerator;
+protected:
+    list<MyParticleForceRegistry> registry;
 
     //* ╔═══════════════════════════════╗
     //* ║ Constructors & Deconstructors ║
     //* ╚═══════════════════════════════╝
 public:
-    MyPhysicsWorld();
+    MyForceRegistry();
 
     //* ╔═════════╗
     //* ║ Methods ║
     //* ╚═════════╝
 public:
-    void update(float time);
-    void addParticle(MyParticle* particleToAdd);
+    void add(MyParticle* particle, MyForceGenerator* generator);
+    void remove(MyParticle* particle, MyForceGenerator* generator);
+    void clear();
+    void updateForces(float time);
+    list<MyForceGenerator*> getAppliedForces();
+    list<MyParticle*> getAffectedParticles();
 
 private:
-    void updateParticleList();
-
     //* ╔═══════════════════╗
     //* ║ Getters & Setters ║
     //* ╚═══════════════════╝
 public:
+    list<MyParticleForceRegistry> getRegistry();
 };
 }  // namespace MyPhysics

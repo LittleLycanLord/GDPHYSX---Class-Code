@@ -9,15 +9,19 @@ class MyParticle {
     //* ║ Attributes ║
     //* ╚════════════╝
 protected:
-    double mass;
-    bool isDestroyed;
-    bool usesGravity;
-    MyVector3 position;
-    double magnitudeVelocity;
-    MyVector3 totalVelocity;
-    MyVector3 averageVelocity;
-    MyVector3 velocity;
-    MyVector3 acceleration;
+    double mass;         //? in kg
+    MyVector3 position;  //? in m
+
+    double damping   = DEFAULT_DAMPING;  //? [0 -> 1]; the lower the value, the higher the drag
+    bool isDestroyed = false;
+    bool usesGravity = false;
+    double magnitudeVelocity   = 0.0f;         //? in m/s
+    MyVector3 totalVelocity    = MyVector3();  //? in m/s
+    MyVector3 averageVelocity  = MyVector3();  //? in m/s
+    MyVector3 velocity         = MyVector3();  //? in m/s
+    MyVector3 acceleration     = MyVector3();  //? in m/s^2
+
+    MyVector3 accumulatedForce = MyVector3();  //? in kg m/s^2
 
     //* ╔═══════════════════════════════╗
     //* ║ Constructors & Deconstructors ║
@@ -39,6 +43,8 @@ protected:
 public:
     void update(double time, int physicsUpdateCount);
     void moveTowards(MyVector3 target, double magnitudeVelocity);
+    void addForce(MyVector3 force);
+    void resetForce();
     void stop();
     void destroy();
 
@@ -48,6 +54,8 @@ public:
 public:
     double getMass();
     void setMass(double mass);
+    double getDamping();
+    void setDamping(double damping);
     bool getIsDestroyed();
     bool getUsesGravity();
     void setUsesGravity(bool usesGravity);

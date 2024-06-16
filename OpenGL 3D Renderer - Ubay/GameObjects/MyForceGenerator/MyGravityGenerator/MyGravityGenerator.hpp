@@ -1,39 +1,32 @@
 #pragma once
-#include "../MyForceGenerator/MyGravityGenerator/MyGravityGenerator.hpp"
-#include "../MyForceRegistry/MyForceRegistry.hpp"
-#include "../MyParticle/MyParticle.hpp"
+#include "../MyForceGenerator.hpp"
 #include "stdafx.h"
 
 namespace MyPhysics {
 
 using namespace std;
 
-class MyPhysicsWorld {
+class MyGravityGenerator : public MyForceGenerator {
     //* ╔════════════╗
     //* ║ Attributes ║
     //* ╚════════════╝
-public:
-    list<MyParticle*> particles;
-    int updateCount;
-    MyForceRegistry forceRegistry;
-    MyGravityGenerator gravityGenerator;
+protected:
+    MyVector3 gravity = MyVector3(DEFAULT_GRAVITY_X, DEFAULT_GRAVITY_Y, DEFAULT_GRAVITY_Z);
 
     //* ╔═══════════════════════════════╗
     //* ║ Constructors & Deconstructors ║
     //* ╚═══════════════════════════════╝
 public:
-    MyPhysicsWorld();
+    MyGravityGenerator();
+    MyGravityGenerator(MyVector3 gravity);
 
     //* ╔═════════╗
     //* ║ Methods ║
     //* ╚═════════╝
 public:
-    void update(float time);
-    void addParticle(MyParticle* particleToAdd);
+    void updateForce(MyParticle* targetParticle, float time) override;
 
 private:
-    void updateParticleList();
-
     //* ╔═══════════════════╗
     //* ║ Getters & Setters ║
     //* ╚═══════════════════╝

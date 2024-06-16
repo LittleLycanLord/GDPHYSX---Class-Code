@@ -1,39 +1,33 @@
 #pragma once
-#include "../MyForceGenerator/MyGravityGenerator/MyGravityGenerator.hpp"
-#include "../MyForceRegistry/MyForceRegistry.hpp"
-#include "../MyParticle/MyParticle.hpp"
+#include "../MyForceGenerator.hpp"
 #include "stdafx.h"
 
 namespace MyPhysics {
 
 using namespace std;
 
-class MyPhysicsWorld {
+class MyDragGenerator : public MyForceGenerator {
     //* ╔════════════╗
     //* ║ Attributes ║
     //* ╚════════════╝
-public:
-    list<MyParticle*> particles;
-    int updateCount;
-    MyForceRegistry forceRegistry;
-    MyGravityGenerator gravityGenerator;
+protected:
+    double dragCoefficient1 = DEFAULT_DRAG_COEFFICIENT_1;
+    double dragCoefficient2 = DEFAULT_DRAG_COEFFICIENT_2;
 
     //* ╔═══════════════════════════════╗
     //* ║ Constructors & Deconstructors ║
     //* ╚═══════════════════════════════╝
 public:
-    MyPhysicsWorld();
+    MyDragGenerator();
+    MyDragGenerator(double dragCoefficient1, double dragCoefficient2);
 
     //* ╔═════════╗
     //* ║ Methods ║
     //* ╚═════════╝
 public:
-    void update(float time);
-    void addParticle(MyParticle* particleToAdd);
+    virtual void updateForce(MyParticle* targetParticle, float time) override;
 
 private:
-    void updateParticleList();
-
     //* ╔═══════════════════╗
     //* ║ Getters & Setters ║
     //* ╚═══════════════════╝
