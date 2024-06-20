@@ -9,6 +9,7 @@ const bool DEBUG_MODE_CAMERA_MOVEMENT           = true;
 const bool DEBUG_MODE_MODEL_TINTING             = false;
 const bool DEBUG_MODE_MATH                      = true;
 const bool DEBUG_MODE_PHYSICS                   = true;
+const bool DEBUG_MODE_PHYSICS_TIME              = false;
 const bool DEBUG_MODE_PROGRAMMING_CHALLENGE_1   = false;
 const int COUT_PRECISION                        = 2;
 //* - - - - - END OF DEBUG - - - - -
@@ -39,6 +40,9 @@ const bool POSITIVE_Y_ONLY                      = false;
 const bool ORIGIN_MARKER                        = false;
 const double FRAMERATE                          = 60.0f;
 constexpr std::chrono::nanoseconds TIMESTEP     = 16ms;
+
+const double PARTICLE_SCALE                     = 3.0f;
+
 const float DEFAULT_GRAVITY_X                   = 0.0f;
 const float DEFAULT_GRAVITY_Y                   = -9.8f;
 const float DEFAULT_GRAVITY_Z                   = 0.0f;

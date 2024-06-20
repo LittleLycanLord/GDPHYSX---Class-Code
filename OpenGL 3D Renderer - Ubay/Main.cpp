@@ -2,47 +2,43 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
-#include "GameObjects/Cameras/Camera.hpp"
-#include "GameObjects/Cameras/OrthographicCamera/OrthographicCamera.hpp"
-#include "GameObjects/Cameras/PerspectiveCamera/PerspectiveCamera.hpp"
-
-#include "GameObjects/Lights/Light.hpp"
-#include "GameObjects/Lights/DirectionalLight/DirectionalLight.hpp"
-#include "GameObjects/Lights/SpotLight/SpotLight.hpp"
-#include "GameObjects/Lights/PointLight/PointLight.hpp"
-#include "GameObjects/MyTexture/MyTexture.hpp"
-#include "GameObjects/MyParticle/MyParticle.hpp"
-#include "GameObjects/MyParticle/MyRenderParticle/MyRenderParticle.hpp"
-#include "GameObjects/MyForceGenerator/MyDragGenerator/MyDragGenerator.hpp"
-#include "GameObjects/MyForceGenerator/MyGravityGenerator/MyGravityGenerator.hpp"
-#include "GameObjects/MyForceRegistry/MyForceRegistry.hpp"
-#include "GameObjects/MyPhysicsWorld/MyPhysicsWorld.hpp"
-#include "GameObjects/MyNormal/MyNormal.hpp"
-#include "GameObjects/Model3D/Model3D.hpp"
-#include "GameObjects/Player/Player.hpp"
-#include "GameObjects/Shader/Shader.hpp"
+#include "MyClasses/MyCameras/MyCamera.hpp"
+#include "MyClasses/MyCameras/MyOrthographicCamera/MyOrthographicCamera.hpp"
+#include "MyClasses/MyCameras/MyPerspectiveCamera/MyPerspectiveCamera.hpp"
+#include "MyClasses/MyLights/MyLight.hpp"
+#include "MyClasses/MyLights/MyDirectionalLight/MyDirectionalLight.hpp"
+#include "MyClasses/MyLights/MySpotLight/MySpotLight.hpp"
+#include "MyClasses/MyLights/MyPointLight/MyPointLight.hpp"
+#include "MyClasses/MyTexture/MyTexture.hpp"
+#include "MyClasses/MyParticle/MyParticle.hpp"
+#include "MyClasses/MyParticle/MyRenderParticle/MyRenderParticle.hpp"
+#include "MyClasses/MyParticle/MyParticleSystem/MyParticleSystem.hpp"
+#include "MyClasses/MyForceGenerator/MyDragGenerator/MyDragGenerator.hpp"
+#include "MyClasses/MyForceGenerator/MyGravityGenerator/MyGravityGenerator.hpp"
+#include "MyClasses/MyForceRegistry/MyForceRegistry.hpp"
+#include "MyClasses/MyPhysicsWorld/MyPhysicsWorld.hpp"
+#include "MyClasses/MyNormal/MyNormal.hpp"
+#include "MyClasses/My3DModel/My3DModel.hpp"
+#include "MyClasses/Player/Player.hpp"
+#include "MyClasses/MyShader/MyShader.hpp"
 #include "stdafx.h"
 // clang-format on                       
 
 using namespace std;
 using namespace chrono;
-using namespace models;
+using namespace rendering;
 using namespace MyPhysics;
 
 //* - - - - - POINTERS AND CONTAINERS - - - - -
-vector<DirectionalLight*> directionalLights = {};
-vector<PointLight*> pointLights             = {};
-vector<SpotLight*> spotLights               = {};
-vector<Light*> lights                       = {};
+vector<MyDirectionalLight*> directionalLights = {};
+vector<MyPointLight*> pointLights             = {};
+vector<MySpotLight*> spotLights               = {};
+vector<MyLight*> lights                       = {};
 
-list<Model3D*> model3ds                     = {};
-Model3D* activeModel                        = NULL;
+list<My3DModel*> renderingList                     ={};
 
-vector<Camera*> cameras                     = {};
-Camera* activeCamera                        = NULL;
-
-vector<MyParticle*> particles               = {};
-vector<MyRenderParticle*> renderParticles   = {};
+vector<MyCamera*> cameras                     = {};
+MyCamera* activeCamera                        = NULL;
 
 Player* player                              = NULL;
 //* - - - - - END OF POINTERS AND CONTAINERS - - - - -
@@ -50,14 +46,15 @@ Player* player                              = NULL;
 //* - - - - - PHYSICS - - - - -
 using physicsClock                          = high_resolution_clock;
 using timerClock                            = steady_clock;
+bool pausePhysics = false;
 auto timerClockStart                        = timerClock::now();
 auto timerClockMark                         = timerClock::now();
 nanoseconds currentNanosecond(0);
-MyPhysicsWorld physicsWorld = MyPhysicsWorld();
+MyPhysicsWorld physicsWorld = MyPhysicsWorld(&renderingList);
 //* - - - - - END OF PHYSICS - - - - -
 
 void updateModelsList() {
-    model3ds.remove_if([](Model3D* model) { return model->getIsDestroyed(); });
+    renderingList.remove_if([](My3DModel* model) { return model->getIsDestroyed(); });
 }
 
 //? Reserved GLFW Function for Keyboard Inputs
@@ -70,6 +67,26 @@ void Key_Callback(
     //?lock]
     activeCamera->CameraMovement(key, action, mods);
     activeCamera->OtherInputs(key, action, mods);
+    switch (key) {
+        //* Toggle Physics
+        case GLFW_KEY_SPACE:
+            if (action == GLFW_PRESS) {
+               pausePhysics = !pausePhysics;
+            }
+            break;
+        //* Swap Camera
+        case GLFW_KEY_LEFT_SHIFT:
+            if (action == GLFW_PRESS) {
+                if(activeCamera == cameras[0]) {
+                    activeCamera = cameras[1];
+                } else {
+                    activeCamera = cameras[0];
+                }
+                system("cls");
+               cout << "Current Camera Switched to: " + activeCamera->getName() << endl;
+            }
+            break;
+    }
 }
 
 int main(void) {
@@ -96,13 +113,13 @@ int main(void) {
     //* - - - - - END OF PLAYER INITIALIZATION - - - - -
 
     //* - - - - - SHADER CREATION - - - - -
-    Shader lightingFragmentShader(LIGHTING_FRAGMENT_SHADER_PATH, ShaderType::FRAGMENT);
+    MyShader lightingFragmentShader(LIGHTING_FRAGMENT_SHADER_PATH, ShaderType::FRAGMENT);
     lightingFragmentShader.loadShader();
-    Shader lightingVertexShader(LIGHTING_VERTEX_SHADER_PATH, ShaderType::VERTEX);
+    MyShader lightingVertexShader(LIGHTING_VERTEX_SHADER_PATH, ShaderType::VERTEX);
     lightingVertexShader.loadShader();
-    Shader skyboxFragmentShader(SKYBOX_FRAGMENT_SHADER_PATH, ShaderType::FRAGMENT);
+    MyShader skyboxFragmentShader(SKYBOX_FRAGMENT_SHADER_PATH, ShaderType::FRAGMENT);
     skyboxFragmentShader.loadShader();
-    Shader skyboxVertexShader(SKYBOX_VERTEX_SHADER_PATH, ShaderType::VERTEX);
+    MyShader skyboxVertexShader(SKYBOX_VERTEX_SHADER_PATH, ShaderType::VERTEX);
     skyboxVertexShader.loadShader();
 
     GLuint lightingShaderProgram = glCreateProgram();
@@ -213,42 +230,33 @@ int main(void) {
     //* - - - - - END OF SKYBOX TEXTURING - - - - -
 
     //* - - - - - CAMERAS - - - - -
-    cameras = {//    new PerspectiveCamera("Sample Camera",
-               //                          glm::vec3(0.0f, 0.0f, 0.0f),
-               //                          glm::vec3(0.0f, 0.0f, -1.0f),
-               //                          60.0f,
-               //                          1000.0f),
-               new OrthographicCamera("Main",
-                                      glm::vec3(0.0f, 600.0f, 0.0f),
-                                      glm::vec3(0.0f, 600.0f, -1.0f),
-                                      -600.0f,
-                                      600.0f,
-                                      -600.0f,
-                                      600.0f,
-                                      0.001f,
-                                      1000.0f)};
+    cameras = {new MyPerspectiveCamera("Perspective Camera",
+                                       glm::vec3(0.0f, 0.0f, WINDOW_WIDTH),
+                                       glm::vec3(0.0f, 0.0f, 0.0f),
+                                       60.0f,
+                                       1000.0f)};
     if (ONE_PIXEL_PER_METER) {
         if (POSITIVE_Y_ONLY) {
             cameras.push_back(
-                new OrthographicCamera("Main",
-                                       glm::vec3(0.0f, WINDOW_WIDTH, WINDOW_WIDTH / 2),
-                                       glm::vec3(0.0f, WINDOW_WIDTH, 0.0f),
-                                       -WINDOW_WIDTH / 2,
-                                       WINDOW_WIDTH / 2,
-                                       -WINDOW_WIDTH / 2,
-                                       WINDOW_WIDTH / 2,
-                                       0.001f,
-                                       1000.0f));
+                new MyOrthographicCamera("Orthographic Camera",
+                                         glm::vec3(0.0f, WINDOW_WIDTH, WINDOW_WIDTH / 2),
+                                         glm::vec3(0.0f, WINDOW_WIDTH, 0.0f),
+                                         -WINDOW_WIDTH / 2,
+                                         WINDOW_WIDTH / 2,
+                                         -WINDOW_WIDTH / 2,
+                                         WINDOW_WIDTH / 2,
+                                         0.001f,
+                                         1000.0f));
         } else {
-            cameras.push_back(new OrthographicCamera("Main",
-                                                     glm::vec3(0.0f, 0.0f, WINDOW_WIDTH / 2),
-                                                     glm::vec3(0.0f, 0.0f, 0.0f),
-                                                     -WINDOW_WIDTH / 2,
-                                                     WINDOW_WIDTH / 2,
-                                                     -WINDOW_WIDTH / 2,
-                                                     WINDOW_WIDTH / 2,
-                                                     0.001f,
-                                                     1000.0f));
+            cameras.push_back(new MyOrthographicCamera("Orthographic Camera",
+                                                       glm::vec3(0.0f, 0.0f, WINDOW_WIDTH / 2),
+                                                       glm::vec3(0.0f, 0.0f, 0.0f),
+                                                       -WINDOW_WIDTH / 2,
+                                                       WINDOW_WIDTH / 2,
+                                                       -WINDOW_WIDTH / 2,
+                                                       WINDOW_WIDTH / 2,
+                                                       0.001f,
+                                                       1000.0f));
         }
     }
 
@@ -265,56 +273,32 @@ int main(void) {
     glm::vec3 UpVector    = glm::normalize(glm::cross(RightVector, ForwardVector));
     //* - - - - - END OF WORLD FACTS - - - - -
 
-    //* - - - - - PARTICLES - - - - -
-    particles             = {
-       // new MyParticle()
-    };
-
-    renderParticles =
-        // DEBUG:
-        {new MyRenderParticle(MyVector3(1.0f, 0.0f, 0.0f)),
-         new MyRenderParticle(MyVector3(0.0f, 1.0f, 0.0f)),
-         new MyRenderParticle(MyVector3(0.0f, 0.0f, 1.0f))};
-
-    // ASSIGNMENT 3: {new MyRenderParticle(MyVector3(1.0f, 1.0f, 1.0f));
-    // PROGRAMMING CHALLENGE 1:
-    // {new MyRenderParticle(MyVector3(1.0f, 0.0f, 0.0f)),
-    //  new MyRenderParticle(MyVector3(0.0f, 1.0f, 0.0f)),
-    //  new MyRenderParticle(MyVector3(0.0f, 0.0f, 1.0f)),
-    //  new MyRenderParticle(MyVector3(1.0f, 1.0f, 0.0f))};
-
-    if (ORIGIN_MARKER) renderParticles.push_back(new MyRenderParticle(MyVector3(1.0f, 1.0f, 1.0f)));
-
-    for (MyRenderParticle* renderParticle : renderParticles) {
-        particles.push_back(renderParticle);
-    }
-    //* - - - - - END OF PARTICLES - - - - -
-
     //* - - - - - LIGHTS - - - - -
-    directionalLights = {
-       new DirectionalLight("Top White Directional Light",
-                            true,
-                            glm::vec3(0.0f, -1.0f, 0.0f),  //? Direction
-                            glm::vec3(1.0f, 1.0f, 1.0f),   //? Color
-                            0.1f,                          //? Ambient Strength
-                            glm::vec3(1.0f, 1.0f, 1.0f),   //? Ambient Color
-                            0.5f,                          //? Specular Strength
-                            16,                            //? Specular Phong
-                            5.0f),                         //? Brightness
-       new DirectionalLight("Bottom White Directional Light",
-                            true,
-                            glm::vec3(0.0f, 1.0f, 0.0f),  //? Direction
-                            glm::vec3(1.0f, 1.0f, 1.0f),  //? Color
-                            0.1f,                         //? Ambient Strength
-                            glm::vec3(1.0f, 1.0f, 1.0f),  //? Ambient Color
-                            0.5f,                         //? Specular Strength
-                            16,                           //? Specular Phong
-                            5.0f),                        //? Brightness
+    directionalLights     = {
+       new MyDirectionalLight("Top White Directional Light",
+                              true,
+                              glm::vec3(0.0f, -1.0f, 0.0f),  //? Direction
+                              glm::vec3(1.0f, 1.0f, 1.0f),   //? Color
+                              0.1f,                          //? Ambient Strength
+                              glm::vec3(1.0f, 1.0f, 1.0f),   //? Ambient Color
+                              0.5f,                          //? Specular Strength
+                              16,                            //? Specular Phong
+                              5.0f),                         //? Brightness
+       new MyDirectionalLight("Bottom White Directional Light",
+                              true,
+                              glm::vec3(0.0f, 1.0f, 0.0f),  //? Direction
+                              glm::vec3(1.0f, 1.0f, 1.0f),  //? Color
+                              0.1f,                         //? Ambient Strength
+                              glm::vec3(1.0f, 1.0f, 1.0f),  //? Ambient Color
+                              0.5f,                         //? Specular Strength
+                              16,                           //? Specular Phong
+                              5.0f),                        //? Brightness
     };
-    for (DirectionalLight* directionalLight : directionalLights) lights.push_back(directionalLight);
+    for (MyDirectionalLight* directionalLight : directionalLights)
+        lights.push_back(directionalLight);
 
     pointLights = {
-       //    new PointLight("White Point Light",
+       //    new MyPointLight("White Point Light",
        //                   true,
        //                   glm::vec3(0.0f, 0.8f, 0.2f),  //? Position
        //                   glm::vec3(1.0f, 1.0f, 1.0f),  //? Color
@@ -324,7 +308,7 @@ int main(void) {
        //                   16,                           //? Specular Phong
        //                   1.2f),                        //? Brightness
     };
-    for (PointLight* pointLight : pointLights) lights.push_back(pointLight);
+    for (MyPointLight* pointLight : pointLights) lights.push_back(pointLight);
 
     spotLights = {
        //    new SpotLight("White Spotlight",
@@ -339,28 +323,33 @@ int main(void) {
        //                  16,                            //? Specular Phong
        //                  1.0f),                         //? Brightness
     };
-    for (SpotLight* spotLight : spotLights) lights.push_back(spotLight);
+    for (MySpotLight* spotLight : spotLights) lights.push_back(spotLight);
 
     //* - - - - - END OF LIGHTS - - - - -
 
+    //* - - - - - PARTICLES - - - - -
+    physicsWorld.addParticle(new MyRenderParticle(MyVector3(1.0f, 0.0f, 0.0f)));
+    physicsWorld.addParticle(new MyRenderParticle(MyVector3(0.0f, 1.0f, 0.0f)));
+    physicsWorld.addParticle(new MyRenderParticle(MyVector3(0.0f, 0.0f, 1.0f)));
+    // physicsWorld.addParticle(
+    //     new MyParticleSystem(MyVector3(0.0f, 0.0f, 0.0f), 10.0f, 10, &physicsWorld));
+
+    // ASSIGNMENT 3: {new MyRenderParticle(MyVector3(1.0f, 1.0f, 1.0f));
+    // PROGRAMMING CHALLENGE 1:
+    // {new MyRenderParticle(MyVector3(1.0f, 0.0f, 0.0f)),
+    //  new MyRenderParticle(MyVector3(0.0f, 1.0f, 0.0f)),
+    //  new MyRenderParticle(MyVector3(0.0f, 0.0f, 1.0f)),
+    //  new MyRenderParticle(MyVector3(1.0f, 1.0f, 0.0f))};
+
+    if (ORIGIN_MARKER) physicsWorld.addParticle(new MyRenderParticle(MyVector3(1.0f, 1.0f, 1.0f)));
+    //* - - - - - END OF PARTICLES - - - - -
+
     //* - - - - - MODEL LOADING - - - - -
-    model3ds = {
-       // new Model3D("Sphere",
-       //                     "Assets/Models/sphere.obj",
-       //                     "Assets/Default.png",
-       //                     "",
-       //                     glm::vec3(0.0f, 0.0f, 0.0f),
-       //                     glm::mat4(1.0f),
-       //                     glm::vec3(3.0f),
-       //                     glm::vec3(0.0f))
-    };
-    for (MyRenderParticle* renderParticle : renderParticles) {
-        model3ds.push_back(renderParticle->getModel3D());
+
+    for (My3DModel* model : renderingList) {
+        cout << "Loading Model: " + model->getName() << endl;
+        model->loadModel();
     }
-
-    if (!model3ds.empty()) activeModel = model3ds.back();
-
-    for (Model3D* model : model3ds) model->loadModel();
     //* - - - - - END OF MODEL LOADING - - - - -
 
     //* - - - - - PRE-RUNTIME - - - - -
@@ -408,27 +397,29 @@ int main(void) {
     //* - - - - - END OF PRE-RUNTIME - - - - -
 
     //* - - - - - PHYSICS WORLD INITIALIZATION - - - - -
+
     //* - - - - - DEBUGGING - - - - -
-    // Red Particle
-    particles[0]->setPosition(MyVector3(-200.0f, 150.0f, 0.0f));
-    particles[0]->addForce(MyVector3(1500.0f, 0.0f, 0.0f));
+    // Red Particle (X)
+    physicsWorld.getParticleListAsVector()[0]->setPosition(MyVector3(100.0f, 0.0f, 0.0f));
+    physicsWorld.getParticleListAsVector()[0]->addForce(MyVector3(0.0f, 0.0f, 0.0f));
+    // physicsWorld.getParticleListAsVector()[0]->setLifetime(2.0f);
 
-    // Green Particle
-    particles[1]->setPosition(MyVector3(-200.0f, 0.0f, 0.0f));
-    particles[1]->addForce(MyVector3(3000.0f, 0.0f, 0.0f));
+    // Green Particle (Y)
+    physicsWorld.getParticleListAsVector()[1]->setPosition(MyVector3(0.0f, 100.0f, 0.0f));
+    physicsWorld.getParticleListAsVector()[1]->addForce(MyVector3(0.0f, 0.0f, 0.0f));
+    // physicsWorld.getParticleListAsVector()[1]->setLifetime(4.0f);
 
-    // Blue Particle
-    particles[2]->setPosition(MyVector3(-200.0f, -150.0f, 0.0f));
-    particles[2]->addForce(MyVector3(6000.0f, 0.0f, 0.0f));
-    particles[2]->setUsesGravity(true);
+    // Blue Particle (Z)
+    physicsWorld.getParticleListAsVector()[2]->setPosition(MyVector3(0.0f, 0.0f, 100.0f));
+    physicsWorld.getParticleListAsVector()[2]->addForce(MyVector3(0.0f, 0.0f, 0.0f));
+    // physicsWorld.getParticleListAsVector()[2]->setUsesGravity(true);
+    // physicsWorld.getParticleListAsVector()[2]->setLifetime(6.0f);
 
     // Forces:
-    MyDragGenerator drag = MyDragGenerator(0.14, 0.1);
-    physicsWorld.forceRegistry.add(particles[0], &drag);
+    // MyDragGenerator drag = MyDragGenerator(0.14, 0.1);
+    // physicsWorld.forceRegistry.add(physicsWorld.getParticleListAsVector()[0], &drag);
     //* - - - - - END OF DEBUGGING - - - - -
-    for (MyParticle* particle : particles) {
-        physicsWorld.addParticle(particle);
-    }
+
     //* - - - - - END OF PHYSICS WORLD INITIALIZATION - - - - -
 
     //* - - - - - RUNTIME - - - - -
@@ -447,144 +438,154 @@ int main(void) {
         previousTime  = currentTime;
 
         currentNanosecond += duration;
+        if (!pausePhysics) {
+            if (currentNanosecond >= TIMESTEP) {
+                auto millisecond = duration_cast<milliseconds>(currentNanosecond);
+                if (DEBUG_MODE_PHYSICS_TIME)
+                    cout << "Millisecond: " << (float)millisecond.count() << endl;
+                if (DEBUG_MODE_PHYSICS_TIME) cout << "Physics Update" << endl;
 
-        if (currentNanosecond >= TIMESTEP) {
-            auto millisecond = duration_cast<milliseconds>(currentNanosecond);
-            if (false) cout << "Millisecond: " << (float)millisecond.count() << endl;
-            if (false) cout << "Physics Update" << endl;
+                //? Place physics related updates BELOW this line
+                //* - - - - - DEBUGGING - - - - -
+                physicsWorld.update((float)millisecond.count() / 1000);
+                // cout << "Rendering List: " << renderingList.size() << endl;
 
-            //? Place physics related updates BELOW this line
-            //* - - - - - DEBUGGING - - - - -
-            physicsWorld.update((float)millisecond.count() / 1000);
-            //* - - - - - END OF DEBUGGING - - - - -
+                //* - - - - - END OF DEBUGGING - - - - -
 
-            //* - - - - - ASSIGNMENT 3 - - - - -
-            // if (particles[0]->getPosition().getY() <= 0.0f && !bLanded) {
-            //     bLanded       = true;
-            //     timerClockMark = timerClock::now();
-            //     cout
-            //         << "It took "
-            //         << (float)duration_cast<milliseconds>(timerClockMark -
-            //         timerClockStart).count() /
-            //                1000
-            //         << " seconds for it to land." << endl;
-            // } else {
-            //     physicsWorld.update((float)millisecond.count() / 1000);
-            // }
-            //* - - - - - END OF ASSIGNMENT 3 - - - - -
+                //* - - - - - ASSIGNMENT 3 - - - - -
+                // if (particles[0]->getPosition().getY() <= 0.0f && !bLanded) {
+                //     bLanded       = true;
+                //     timerClockMark = timerClock::now();
+                //     cout
+                //         << "It took "
+                //         << (float)duration_cast<milliseconds>(timerClockMark -
+                //         timerClockStart).count() /
+                //                1000
+                //         << " seconds for it to land." << endl;
+                // } else {
+                //     physicsWorld.update((float)millisecond.count() / 1000);
+                // }
+                //* - - - - - END OF ASSIGNMENT 3 - - - - -
 
-            //* - - - - - PROGRAMMING CHALLENGE 3 - - - - -
-            // vector<float> particleDistancesBeforeUpdate = {};
-            // for (MyParticle* particle : particles) {
-            //     //? Distance Formula for 2 Points in 3 Dimensions
-            //     particleDistancesBeforeUpdate.push_back(
-            //         sqrt(pow((0.0f - particle->getPosition().x), 2) +
-            //              pow((0.0f - particle->getPosition().y), 2) +
-            //              pow((0.0f - particle->getPosition().z), 2)));
-            // }
-            // physicsWorld.update((float)millisecond.count() / 1000);
-            // vector<float> particleDistancesAfterUpdate = {};
-            // for (MyParticle* particle : particles) {
-            //     //? Distance Formula for 2 Points in 3 Dimensions
-            //     particleDistancesAfterUpdate.push_back(
-            //         sqrt(pow((0.0f - particle->getPosition().x), 2) +
-            //              pow((0.0f - particle->getPosition().y), 2) +
-            //              pow((0.0f - particle->getPosition().z), 2)));
-            // }
-            // timerClockMark = timerClock::now();
-            // if (DEBUG_MODE_PROGRAMMING_CHALLENGE_1) {
-            //     cout << "Distances: ";
-            //     for (int i = 0; i < particleDistancesBeforeUpdate.size(); i++) {
-            //         cout << fixed << setprecision(COUT_PRECISION)
-            //              << particleDistancesBeforeUpdate[i] << "m |";
-            //     }
-            //     cout << "---";
-            //     cout << "Speeds: ";
-            //     for (int i = 0; i < particleDistancesBeforeUpdate.size(); i++) {
-            //         cout << fixed << setprecision(COUT_PRECISION)
-            //              << particles[i]->getMagnitudeVelocity() << "m/s |";
-            //     }
-            //     cout << " at time: "
-            //          << (float)duration_cast<milliseconds>(timerClockMark - timerClockStart)
-            //                     .count() /
-            //                 1000
-            //          << endl;
-            // }
+                //* - - - - - PROGRAMMING CHALLENGE 3 - - - - -
+                // vector<float> particleDistancesBeforeUpdate = {};
+                // for (MyParticle* particle : particles) {
+                //     //? Distance Formula for 2 Points in 3 Dimensions
+                //     particleDistancesBeforeUpdate.push_back(
+                //         sqrt(pow((0.0f - particle->getPosition().x), 2) +
+                //              pow((0.0f - particle->getPosition().y), 2) +
+                //              pow((0.0f - particle->getPosition().z), 2)));
+                // }
+                // physicsWorld.update((float)millisecond.count() / 1000);
+                // vector<float> particleDistancesAfterUpdate = {};
+                // for (MyParticle* particle : particles) {
+                //     //? Distance Formula for 2 Points in 3 Dimensions
+                //     particleDistancesAfterUpdate.push_back(
+                //         sqrt(pow((0.0f - particle->getPosition().x), 2) +
+                //              pow((0.0f - particle->getPosition().y), 2) +
+                //              pow((0.0f - particle->getPosition().z), 2)));
+                // }
+                // timerClockMark = timerClock::now();
+                // if (DEBUG_MODE_PROGRAMMING_CHALLENGE_1) {
+                //     cout << "Distances: ";
+                //     for (int i = 0; i < particleDistancesBeforeUpdate.size(); i++) {
+                //         cout << fixed << setprecision(COUT_PRECISION)
+                //              << particleDistancesBeforeUpdate[i] << "m |";
+                //     }
+                //     cout << "---";
+                //     cout << "Speeds: ";
+                //     for (int i = 0; i < particleDistancesBeforeUpdate.size(); i++) {
+                //         cout << fixed << setprecision(COUT_PRECISION)
+                //              << particles[i]->getMagnitudeVelocity() << "m/s |";
+                //     }
+                //     cout << " at time: "
+                //          << (float)duration_cast<milliseconds>(timerClockMark -
+                //          timerClockStart)
+                //                     .count() /
+                //                 1000
+                //          << endl;
+                // }
 
-            // //? Logic: At the frame where the distance between the particle and the center
-            // //? increases, given that they will be travelling in one direction towards it, will
-            // //? mean that they have passed the center at that frame.
+                // //? Logic: At the frame where the distance between the particle and the
+                // center
+                // //? increases, given that they will be travelling in one direction towards
+                // it, will
+                // //? mean that they have passed the center at that frame.
 
-            // for (int i = 0; i < particleDistancesBeforeUpdate.size(); i++) {
-            //     if (particleDistancesBeforeUpdate[i] < particleDistancesAfterUpdate[i]) {
-            //         particlesPastCenter++;
-            //         switch (i) {
-            //             case 0:  //? Red
-            //                 cout << "Red: ";
-            //                 break;
-            //             case 1:  //? Green
-            //                 cout << "Green: ";
-            //                 break;
-            //             case 2:  //? Blue
-            //                 cout << "Blue: ";
-            //                 break;
-            //             case 3:  //? Yellow
-            //                 cout << "Yellow: ";
-            //                 break;
-            //         }
-            //         cout << particlesPastCenter;
-            //         switch (particlesPastCenter) {
-            //             case 1:
-            //                 cout << "st";
-            //                 break;
-            //             case 2:
-            //                 cout << "nd";
-            //                 break;
-            //             case 3:
-            //                 cout << "rd";
-            //                 break;
-            //             case 4:
-            //                 cout << "th";
-            //                 break;
-            //         }
-            //         if (DEBUG_MODE_PROGRAMMING_CHALLENGE_1) {
-            //             cout << " at ";
-            //             particles[i]->getPosition().DisplayValues(COUT_PRECISION);
-            //             cout << " after it was from ";
-            //             MyVector3 previousPosition =
-            //                 MyVector3(particles[i]->getPosition() - particles[i]->getVelocity());
-            //             previousPosition.DisplayValues(COUT_PRECISION);
-            //         }
-            //         cout << endl;
-            //         cout << fixed << setprecision(COUT_PRECISION)
-            //              << "Mag. of Velocity: " << particles[i]->getMagnitudeVelocity() << "m/s"
-            //              << endl;
-            //         cout << "Average Velocity: ";
-            //         particles[i]->getAverageVelocity().DisplayValues(COUT_PRECISION);
-            //         cout << "m/s" << endl;
-            //         timerClockMark = timerClock::now();
-            //         cout << "It took "
-            //              << (float)duration_cast<milliseconds>(timerClockMark - timerClockStart)
-            //                         .count() /
-            //                     1000
-            //              << " seconds for it to reach the center." << endl
-            //              << endl;
-            //         particles[i]->stop();
-            //     }
-            // }
+                // for (int i = 0; i < particleDistancesBeforeUpdate.size(); i++) {
+                //     if (particleDistancesBeforeUpdate[i] < particleDistancesAfterUpdate[i]) {
+                //         particlesPastCenter++;
+                //         switch (i) {
+                //             case 0:  //? Red
+                //                 cout << "Red: ";
+                //                 break;
+                //             case 1:  //? Green
+                //                 cout << "Green: ";
+                //                 break;
+                //             case 2:  //? Blue
+                //                 cout << "Blue: ";
+                //                 break;
+                //             case 3:  //? Yellow
+                //                 cout << "Yellow: ";
+                //                 break;
+                //         }
+                //         cout << particlesPastCenter;
+                //         switch (particlesPastCenter) {
+                //             case 1:
+                //                 cout << "st";
+                //                 break;
+                //             case 2:
+                //                 cout << "nd";
+                //                 break;
+                //             case 3:
+                //                 cout << "rd";
+                //                 break;
+                //             case 4:
+                //                 cout << "th";
+                //                 break;
+                //         }
+                //         if (DEBUG_MODE_PROGRAMMING_CHALLENGE_1) {
+                //             cout << " at ";
+                //             particles[i]->getPosition().DisplayValues(COUT_PRECISION);
+                //             cout << " after it was from ";
+                //             MyVector3 previousPosition =
+                //                 MyVector3(particles[i]->getPosition() -
+                //                 particles[i]->getVelocity());
+                //             previousPosition.DisplayValues(COUT_PRECISION);
+                //         }
+                //         cout << endl;
+                //         cout << fixed << setprecision(COUT_PRECISION)
+                //              << "Mag. of Velocity: " << particles[i]->getMagnitudeVelocity()
+                //              << "m/s"
+                //              << endl;
+                //         cout << "Average Velocity: ";
+                //         particles[i]->getAverageVelocity().DisplayValues(COUT_PRECISION);
+                //         cout << "m/s" << endl;
+                //         timerClockMark = timerClock::now();
+                //         cout << "It took "
+                //              << (float)duration_cast<milliseconds>(timerClockMark -
+                //              timerClockStart)
+                //                         .count() /
+                //                     1000
+                //              << " seconds for it to reach the center." << endl
+                //              << endl;
+                //         particles[i]->stop();
+                //     }
+                // }
 
-            //* - - - - - END OF PROGRAMMING CHALLENGE 3 - - - - -
+                //* - - - - - END OF PROGRAMMING CHALLENGE 3 - - - - -
 
-            //? Comment this update call when using a template above
-            // physicsWorld.update((float)millisecond.count() / 1000);
-            //? Place physics related updates ABOVE this line
+                //? Comment this update call when using a template above
+                // physicsWorld.update((float)millisecond.count() / 1000);
+                //? Place physics related updates ABOVE this line
 
-            currentNanosecond -= currentNanosecond;
+                currentNanosecond -= currentNanosecond;
+            }
         }
         //* - - - - - END OF FIXED UPDATE - - - - -
 
         //* - - - - - UPDATE - - - - -
-        if (false) cout << "Normal Update" << endl;
+        if (DEBUG_MODE_PHYSICS_TIME) cout << "Normal Update" << endl;
         //* - - - - - END OF UPDATE - - - - -
 
         //* - - - - - SKYBOX SHADER SWITCH - - - - -
@@ -628,15 +629,11 @@ int main(void) {
         GLuint cameraPositionAddress =
             glGetUniformLocation(lightingShaderProgram, "cameraPosition");
         glUniform3fv(cameraPositionAddress, 1, glm::value_ptr(activeCamera->getPosition()));
-        if (false)
-            cout << "Active Camera Position: [" << activeCamera->getPosition().x << ", "
-                 << activeCamera->getPosition().y << ", " << activeCamera->getPosition().z << "]"
-                 << endl;
         //* - - - - - END OF CAMERA UPDATE - - - - -
 
         //* - - - - - MODEL UPDATE - - - - -
         updateModelsList();
-        for (Model3D* model : model3ds) {
+        for (My3DModel* model : renderingList) {
             //* - - - - - MODEL LIGHTING - - - - -
             glBindVertexArray(*model->getVAO());
 
@@ -833,7 +830,7 @@ int main(void) {
     //* - - - - - END OF RUNTIME - - - - -
 
     //* - - - - - CLEAN UP - - - - -
-    for (Model3D* model : model3ds) {
+    for (My3DModel* model : renderingList) {
         glDeleteVertexArrays(1, model->getVAO());
         glDeleteBuffers(1, model->getVBO());
     }
