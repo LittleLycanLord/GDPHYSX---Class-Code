@@ -24,21 +24,39 @@ void MyParticleSystem::update(double time, int physicsUpdateCount) {
         this->destroy();
     } else {
         if (this->particleCount > 0) {
-            cout << "New particle!" << endl;
-            MyRenderParticle* newParticle = new MyRenderParticle(1.0f, 1.0f, 1.0f);
+            //? Random Color
+            random_device randomDeviceColor;
+            mt19937 aRandomColor(randomDeviceColor());
+            uniform_real_distribution<double> generateColor(0.0f, 1.0f);
+            MyRenderParticle* newParticle =
+                new MyRenderParticle(MyVector3(generateColor(aRandomColor),
+                                               generateColor(aRandomColor),
+                                               generateColor(aRandomColor)));
 
             //* - - - - - PARTICLE DETAILS - - - - -
+            //? Random Force
             random_device randomDeviceXZ;
             mt19937 aRandomXZ(randomDeviceXZ());
-            uniform_int_distribution<> generateXZ(-5000, 5000);
+            uniform_int_distribution<int> generateXZ(-500, 500);
             random_device randomDeviceY;
             mt19937 aRandomY(randomDeviceY());
-            uniform_int_distribution<> generateY(5000, 8000);
+            uniform_int_distribution<int> generateY(100, 2000);
+            //? Random Scale
+            random_device randomDeviceScale;
+            mt19937 aRandomScale(randomDeviceScale());
+            uniform_real_distribution<double> generateScale(2.0f, 10.0f);
+            //? Random Lifetime
+            random_device randomDeviceLifetime;
+            mt19937 aRandomLifetime(randomDeviceLifetime());
+            uniform_real_distribution<double> generateLifetime(1.0f, 10.0f);
 
             newParticle->addForce(
-                MyVector3(generateXZ(aRandomXZ), generateXZ(aRandomY), generateXZ(aRandomXZ)));
+                MyVector3(generateXZ(aRandomXZ), generateY(aRandomY), generateXZ(aRandomXZ)));
+            newParticle->getModel3D()->setScale((glm::vec3)MyVector3(generateScale(aRandomScale)));
             newParticle->setUsesGravity(true);
-            newParticle->setLifetime(6.0f);
+            MyDragGenerator* drag = new MyDragGenerator(0.9, 0.9);
+            this->physicsWorld->getForceRegistry()->add(newParticle, drag);
+            newParticle->setLifetime(generateLifetime(aRandomLifetime));
             //* - - - - - END OF PARTICLE DETAILS - - - - -
 
             this->physicsWorld->addParticle(newParticle);

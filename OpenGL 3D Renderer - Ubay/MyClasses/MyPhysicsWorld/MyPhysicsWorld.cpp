@@ -47,3 +47,4 @@ vector<MyParticle*> MyPhysicsWorld::getParticleListAsVector() {
     vector<MyParticle*> particleListAsVector{begin(this->particles), end(this->particles)};
     return particleListAsVector;
 }
+MyForceRegistry* MyPhysicsWorld::getForceRegistry() { return &this->forceRegistry; }

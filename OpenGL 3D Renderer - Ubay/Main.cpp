@@ -237,16 +237,16 @@ int main(void) {
                                        1000.0f)};
     if (ONE_PIXEL_PER_METER) {
         if (POSITIVE_Y_ONLY) {
-            cameras.push_back(
-                new MyOrthographicCamera("Orthographic Camera",
-                                         glm::vec3(0.0f, WINDOW_WIDTH, WINDOW_WIDTH / 2),
-                                         glm::vec3(0.0f, WINDOW_WIDTH, 0.0f),
-                                         -WINDOW_WIDTH / 2,
-                                         WINDOW_WIDTH / 2,
-                                         -WINDOW_WIDTH / 2,
-                                         WINDOW_WIDTH / 2,
-                                         0.001f,
-                                         1000.0f));
+            cameras.push_back(new MyOrthographicCamera(
+                "Orthographic Camera",
+                glm::vec3(0.0f, WINDOW_WIDTH / 2 + HEIGHT_OFFSET, WINDOW_WIDTH / 2),
+                glm::vec3(0.0f, WINDOW_WIDTH / 2 + HEIGHT_OFFSET, 0.0f),
+                -WINDOW_WIDTH / 2,
+                WINDOW_WIDTH / 2,
+                -WINDOW_WIDTH / 2,
+                WINDOW_WIDTH / 2,
+                0.001f,
+                1000.0f));
         } else {
             cameras.push_back(new MyOrthographicCamera("Orthographic Camera",
                                                        glm::vec3(0.0f, 0.0f, WINDOW_WIDTH / 2),
@@ -328,24 +328,21 @@ int main(void) {
     //* - - - - - END OF LIGHTS - - - - -
 
     //* - - - - - PARTICLES - - - - -
-    physicsWorld.addParticle(new MyRenderParticle(MyVector3(1.0f, 0.0f, 0.0f)));
-    physicsWorld.addParticle(new MyRenderParticle(MyVector3(0.0f, 1.0f, 0.0f)));
-    physicsWorld.addParticle(new MyRenderParticle(MyVector3(0.0f, 0.0f, 1.0f)));
-    // physicsWorld.addParticle(
-    //     new MyParticleSystem(MyVector3(0.0f, 0.0f, 0.0f), 10.0f, 10, &physicsWorld));
+    physicsWorld.addParticle(
+        new MyParticleSystem(MyVector3(0.0f, 0.0f, 0.0f), 10.0f, 100, &physicsWorld));
 
-    // ASSIGNMENT 3: {new MyRenderParticle(MyVector3(1.0f, 1.0f, 1.0f));
-    // PROGRAMMING CHALLENGE 1:
-    // {new MyRenderParticle(MyVector3(1.0f, 0.0f, 0.0f)),
-    //  new MyRenderParticle(MyVector3(0.0f, 1.0f, 0.0f)),
-    //  new MyRenderParticle(MyVector3(0.0f, 0.0f, 1.0f)),
-    //  new MyRenderParticle(MyVector3(1.0f, 1.0f, 0.0f))};
-
-    if (ORIGIN_MARKER) physicsWorld.addParticle(new MyRenderParticle(MyVector3(1.0f, 1.0f, 1.0f)));
+    if (ORIGIN_MARKER) {
+        physicsWorld.addParticle(new MyRenderParticle(MyVector3(1.0f, 0.0f, 0.0f)));
+        physicsWorld.addParticle(new MyRenderParticle(MyVector3(0.0f, 1.0f, 0.0f)));
+        physicsWorld.addParticle(new MyRenderParticle(MyVector3(0.0f, 0.0f, 1.0f)));
+        physicsWorld.getParticleListAsVector()[0]->setPosition(MyVector3(100.0f, 0.0f, 0.0f));
+        physicsWorld.getParticleListAsVector()[1]->setPosition(MyVector3(0.0f, 100.0f, 0.0f));
+        physicsWorld.getParticleListAsVector()[2]->setPosition(MyVector3(0.0f, 0.0f, 100.0f));
+        physicsWorld.addParticle(new MyRenderParticle(MyVector3(1.0f, 1.0f, 1.0f)));
+    }
     //* - - - - - END OF PARTICLES - - - - -
 
     //* - - - - - MODEL LOADING - - - - -
-
     for (My3DModel* model : renderingList) {
         cout << "Loading Model: " + model->getName() << endl;
         model->loadModel();
@@ -393,31 +390,13 @@ int main(void) {
     // int particlesPastCenter = 0;
     //* - - - - - END OF PROGRAMMING CHALLENGE 1 - - - - -
 
-    timerClockStart = timerClock::now();
+    timerClockStart   = timerClock::now();
     //* - - - - - END OF PRE-RUNTIME - - - - -
 
     //* - - - - - PHYSICS WORLD INITIALIZATION - - - - -
 
     //* - - - - - DEBUGGING - - - - -
-    // Red Particle (X)
-    physicsWorld.getParticleListAsVector()[0]->setPosition(MyVector3(100.0f, 0.0f, 0.0f));
-    physicsWorld.getParticleListAsVector()[0]->addForce(MyVector3(0.0f, 0.0f, 0.0f));
-    // physicsWorld.getParticleListAsVector()[0]->setLifetime(2.0f);
 
-    // Green Particle (Y)
-    physicsWorld.getParticleListAsVector()[1]->setPosition(MyVector3(0.0f, 100.0f, 0.0f));
-    physicsWorld.getParticleListAsVector()[1]->addForce(MyVector3(0.0f, 0.0f, 0.0f));
-    // physicsWorld.getParticleListAsVector()[1]->setLifetime(4.0f);
-
-    // Blue Particle (Z)
-    physicsWorld.getParticleListAsVector()[2]->setPosition(MyVector3(0.0f, 0.0f, 100.0f));
-    physicsWorld.getParticleListAsVector()[2]->addForce(MyVector3(0.0f, 0.0f, 0.0f));
-    // physicsWorld.getParticleListAsVector()[2]->setUsesGravity(true);
-    // physicsWorld.getParticleListAsVector()[2]->setLifetime(6.0f);
-
-    // Forces:
-    // MyDragGenerator drag = MyDragGenerator(0.14, 0.1);
-    // physicsWorld.forceRegistry.add(physicsWorld.getParticleListAsVector()[0], &drag);
     //* - - - - - END OF DEBUGGING - - - - -
 
     //* - - - - - END OF PHYSICS WORLD INITIALIZATION - - - - -

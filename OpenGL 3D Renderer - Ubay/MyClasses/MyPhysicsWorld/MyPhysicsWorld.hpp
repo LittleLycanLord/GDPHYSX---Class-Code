@@ -44,5 +44,6 @@ private:
 public:
     list<My3DModel*>* getRenderingList();
     vector<MyParticle*> getParticleListAsVector();
+    MyForceRegistry* getForceRegistry();
 };
 }  // namespace MyPhysics
