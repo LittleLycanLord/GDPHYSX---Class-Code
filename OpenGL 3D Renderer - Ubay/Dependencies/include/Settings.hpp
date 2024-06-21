@@ -42,7 +42,7 @@ const bool ORIGIN_MARKER                        = false;
 const double FRAMERATE                          = 60.0f;
 constexpr std::chrono::nanoseconds TIMESTEP     = 16ms;
 
-const double PARTICLE_SCALE                     = 3.0f;
+const double PARTICLE_SCALE                     = 1.0f;
 
 const float DEFAULT_GRAVITY_X                   = 0.0f;
 const float DEFAULT_GRAVITY_Y                   = -9.8f;

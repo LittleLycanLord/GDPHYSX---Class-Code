@@ -5,11 +5,13 @@ using namespace MyPhysics;
 //* ╔═══════════════════════════════╗
 //* ║ Constructors & Deconstructors ║
 //* ╚═══════════════════════════════╝
-MyParticleSystem::MyParticleSystem(MyVector3 position,
+MyParticleSystem::MyParticleSystem(My3DModel* model,
+                                   MyVector3 position,
                                    double lifetime,
                                    int particleCount,
                                    MyPhysicsWorld* physicsWorld)
     : MyParticle(position),
+      model(model),
       lifetime(lifetime),
       particleCount(particleCount),
       physicsWorld(physicsWorld) {}
@@ -29,7 +31,8 @@ void MyParticleSystem::update(double time, int physicsUpdateCount) {
             mt19937 aRandomColor(randomDeviceColor());
             uniform_real_distribution<double> generateColor(0.0f, 1.0f);
             MyRenderParticle* newParticle =
-                new MyRenderParticle(MyVector3(generateColor(aRandomColor),
+                new MyRenderParticle(this->model,
+                                     MyVector3(generateColor(aRandomColor),
                                                generateColor(aRandomColor),
                                                generateColor(aRandomColor)));
 
@@ -37,10 +40,10 @@ void MyParticleSystem::update(double time, int physicsUpdateCount) {
             //? Random Force
             random_device randomDeviceXZ;
             mt19937 aRandomXZ(randomDeviceXZ());
-            uniform_int_distribution<int> generateXZ(-500, 500);
+            uniform_int_distribution<int> generateXZ(-10000, 10000);
             random_device randomDeviceY;
             mt19937 aRandomY(randomDeviceY());
-            uniform_int_distribution<int> generateY(100, 2000);
+            uniform_int_distribution<int> generateY(10000, 50000);
             //? Random Scale
             random_device randomDeviceScale;
             mt19937 aRandomScale(randomDeviceScale());

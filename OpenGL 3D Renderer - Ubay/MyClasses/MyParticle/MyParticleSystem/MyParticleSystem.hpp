@@ -1,4 +1,5 @@
 #pragma once
+#include "../../My3DModel/My3DModel.hpp"
 #include "../../MyForceGenerator/MyDragGenerator/MyDragGenerator.hpp"
 #include "../../MyPhysicsWorld/MyPhysicsWorld.hpp"
 #include "../MyParticle.hpp"
@@ -14,6 +15,7 @@ class MyParticleSystem : public MyParticle {
     //* ║ Attributes ║
     //* ╚════════════╝
 protected:
+    My3DModel* model;
     MyPhysicsWorld* physicsWorld;
     list<MyParticle*> childParticles;
     double lifetime   = 0.0f;
@@ -23,7 +25,8 @@ protected:
     //* ║ Constructors & Deconstructors ║
     //* ╚═══════════════════════════════╝
 public:
-    MyParticleSystem(MyVector3 position,
+    MyParticleSystem(My3DModel* model,
+                     MyVector3 position,
                      double lifetime,
                      int particleCount,
                      MyPhysicsWorld* physicsWorld);

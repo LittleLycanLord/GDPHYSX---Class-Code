@@ -73,7 +73,7 @@ void MyCamera::CameraMovement(int key, int action, int mods) {
             //     break;
             //* Orbit X: CW (Pitch)
             // case GLFW_KEY_I:
-            case GLFW_KEY_D:
+            case GLFW_KEY_W:
                 // if (action == GLFW_PRESS) {
                 this->position = glm::rotate(
                     this->position, 0.1f * this->moveSpeed.x, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -81,7 +81,7 @@ void MyCamera::CameraMovement(int key, int action, int mods) {
                 break;
             //* Orbit X: CCW (Pitch)
             // case GLFW_KEY_K:
-            case GLFW_KEY_A:
+            case GLFW_KEY_S:
                 // if (action == GLFW_PRESS) {
                 this->position = glm::rotate(
                     this->position, 0.1f * -this->moveSpeed.x, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -89,7 +89,7 @@ void MyCamera::CameraMovement(int key, int action, int mods) {
                 break;
             //* Orbit Y: CW (Yaw)
             // case GLFW_KEY_J:
-            case GLFW_KEY_W:
+            case GLFW_KEY_A:
                 // if (action == GLFW_PRESS) {
                 this->position = glm::rotate(
                     this->position, 0.1f * this->moveSpeed.y, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -97,7 +97,7 @@ void MyCamera::CameraMovement(int key, int action, int mods) {
                 break;
             //* Orbit Y: CCW (Yaw)
             // case GLFW_KEY_L:
-            case GLFW_KEY_S:
+            case GLFW_KEY_D:
                 // if (action == GLFW_PRESS) {
                 this->position = glm::rotate(
                     this->position, 0.1f * -this->moveSpeed.y, glm::vec3(0.0f, 1.0f, 0.0f));

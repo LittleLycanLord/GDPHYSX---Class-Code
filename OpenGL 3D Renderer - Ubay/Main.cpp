@@ -327,69 +327,41 @@ int main(void) {
 
     //* - - - - - END OF LIGHTS - - - - -
 
-    //* - - - - - PARTICLES - - - - -
-    physicsWorld.addParticle(
-        new MyParticleSystem(MyVector3(0.0f, 0.0f, 0.0f), 10.0f, 100, &physicsWorld));
-
-    if (ORIGIN_MARKER) {
-        physicsWorld.addParticle(new MyRenderParticle(MyVector3(1.0f, 0.0f, 0.0f)));
-        physicsWorld.addParticle(new MyRenderParticle(MyVector3(0.0f, 1.0f, 0.0f)));
-        physicsWorld.addParticle(new MyRenderParticle(MyVector3(0.0f, 0.0f, 1.0f)));
-        physicsWorld.getParticleListAsVector()[0]->setPosition(MyVector3(100.0f, 0.0f, 0.0f));
-        physicsWorld.getParticleListAsVector()[1]->setPosition(MyVector3(0.0f, 100.0f, 0.0f));
-        physicsWorld.getParticleListAsVector()[2]->setPosition(MyVector3(0.0f, 0.0f, 100.0f));
-        physicsWorld.addParticle(new MyRenderParticle(MyVector3(1.0f, 1.0f, 1.0f)));
-    }
-    //* - - - - - END OF PARTICLES - - - - -
-
     //* - - - - - MODEL LOADING - - - - -
+    renderingList = {};
     for (My3DModel* model : renderingList) {
         cout << "Loading Model: " + model->getName() << endl;
         model->loadModel();
     }
     //* - - - - - END OF MODEL LOADING - - - - -
 
+    //* - - - - - PARTICLES - - - - -
+    My3DModel* particleModel = new My3DModel("DEFAULT PARTICLE",
+                                             DEFAULT_PARTICLE_MODEL_PATH,
+                                             DEFAULT_PARTICLE_TEXTURE_PATH,
+                                             "",
+                                             glm::vec3(1.0f),
+                                             glm::vec3(0.0f, 0.0f, 0.0f),
+                                             glm::mat4(1.0f),
+                                             glm::vec3(PARTICLE_SCALE),
+                                             glm::vec3(0.0f));
+    particleModel->loadModel();
+
+    physicsWorld.addParticle(new MyParticleSystem(
+        particleModel, MyVector3(0.0f, 0.0f, 0.0f), 10.0f, 100, &physicsWorld));
+
+    if (ORIGIN_MARKER) {
+        physicsWorld.addParticle(new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f)));
+        physicsWorld.addParticle(new MyRenderParticle(particleModel, MyVector3(0.0f, 1.0f, 0.0f)));
+        physicsWorld.addParticle(new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f)));
+        physicsWorld.getParticleListAsVector()[0]->setPosition(MyVector3(100.0f, 0.0f, 0.0f));
+        physicsWorld.getParticleListAsVector()[1]->setPosition(MyVector3(0.0f, 100.0f, 0.0f));
+        physicsWorld.getParticleListAsVector()[2]->setPosition(MyVector3(0.0f, 0.0f, 100.0f));
+        physicsWorld.addParticle(new MyRenderParticle(particleModel, MyVector3(1.0f, 1.0f, 1.0f)));
+    }
+    //* - - - - - END OF PARTICLES - - - - -
+
     //* - - - - - PRE-RUNTIME - - - - -
-    //* - - - - - ASSIGNMENT 3 - - - - -
-    // MyVector3 initialVelocity = MyVector3(0.0f);
-    // bool bLanded              = false;
-
-    // cout << "Set Initial Velocity: " << endl;
-    // cout << "X: ";
-    // cin >> initialVelocity.x;
-    // cout << "Y: ";
-    // cin >> initialVelocity.y;
-    // cout << "Z: ";
-    // cin >> initialVelocity.z;
-    // cout << "Particle Count: " << particles.size() << endl;
-    // particles[0]->setPosition(0.0f, 1.0f, 0.0f);
-    // particles[0]->setVelocity(MyVector3(initialVelocity));
-    //* - - - - - END OF ASSIGNMENT 3 - - - - -
-
-    //* - - - - - PROGRAMMING CHALLENGE 1 - - - - -
-    // // Red Particle
-    // particles[0]->setPosition(MyVector3(-350.0f, 350.0f, 201.0f));
-    // particles[0]->moveTowards(MyVector3(0.0f), 80.0f);
-    // particles[0]->setAcceleration(MyVector3(14.5f));
-
-    // // Green Particle
-    // particles[1]->setPosition(MyVector3(350.0f, 350.0f, 173.0f));
-    // particles[1]->moveTowards(MyVector3(0.0f), 90.0f);
-    // particles[1]->setAcceleration(MyVector3(-8.0f));
-
-    // // Blue Particle
-    // particles[2]->setPosition(MyVector3(350.0f, -350.0f, -300.0f));
-    // particles[2]->moveTowards(MyVector3(0.0f), 130.0f);
-    // particles[2]->setAcceleration(MyVector3(-1.0f));
-
-    // // Yellow Particle
-    // particles[3]->setPosition(MyVector3(-350.0f, -350.0f, -150.0f));
-    // particles[3]->moveTowards(MyVector3(0.0f), 110.0f);
-    // particles[3]->setAcceleration(MyVector3(3.0f));
-
-    // int particlesPastCenter = 0;
-    //* - - - - - END OF PROGRAMMING CHALLENGE 1 - - - - -
-
     timerClockStart   = timerClock::now();
     //* - - - - - END OF PRE-RUNTIME - - - - -
 
@@ -416,8 +388,8 @@ int main(void) {
         auto duration = duration_cast<nanoseconds>(currentTime - previousTime);
         previousTime  = currentTime;
 
-        currentNanosecond += duration;
         if (!pausePhysics) {
+            currentNanosecond += duration;
             if (currentNanosecond >= TIMESTEP) {
                 auto millisecond = duration_cast<milliseconds>(currentNanosecond);
                 if (DEBUG_MODE_PHYSICS_TIME)
@@ -426,140 +398,14 @@ int main(void) {
 
                 //? Place physics related updates BELOW this line
                 //* - - - - - DEBUGGING - - - - -
-                physicsWorld.update((float)millisecond.count() / 1000);
-                // cout << "Rendering List: " << renderingList.size() << endl;
-
                 //* - - - - - END OF DEBUGGING - - - - -
 
-                //* - - - - - ASSIGNMENT 3 - - - - -
-                // if (particles[0]->getPosition().getY() <= 0.0f && !bLanded) {
-                //     bLanded       = true;
-                //     timerClockMark = timerClock::now();
-                //     cout
-                //         << "It took "
-                //         << (float)duration_cast<milliseconds>(timerClockMark -
-                //         timerClockStart).count() /
-                //                1000
-                //         << " seconds for it to land." << endl;
-                // } else {
-                //     physicsWorld.update((float)millisecond.count() / 1000);
-                // }
-                //* - - - - - END OF ASSIGNMENT 3 - - - - -
-
-                //* - - - - - PROGRAMMING CHALLENGE 3 - - - - -
-                // vector<float> particleDistancesBeforeUpdate = {};
-                // for (MyParticle* particle : particles) {
-                //     //? Distance Formula for 2 Points in 3 Dimensions
-                //     particleDistancesBeforeUpdate.push_back(
-                //         sqrt(pow((0.0f - particle->getPosition().x), 2) +
-                //              pow((0.0f - particle->getPosition().y), 2) +
-                //              pow((0.0f - particle->getPosition().z), 2)));
-                // }
-                // physicsWorld.update((float)millisecond.count() / 1000);
-                // vector<float> particleDistancesAfterUpdate = {};
-                // for (MyParticle* particle : particles) {
-                //     //? Distance Formula for 2 Points in 3 Dimensions
-                //     particleDistancesAfterUpdate.push_back(
-                //         sqrt(pow((0.0f - particle->getPosition().x), 2) +
-                //              pow((0.0f - particle->getPosition().y), 2) +
-                //              pow((0.0f - particle->getPosition().z), 2)));
-                // }
-                // timerClockMark = timerClock::now();
-                // if (DEBUG_MODE_PROGRAMMING_CHALLENGE_1) {
-                //     cout << "Distances: ";
-                //     for (int i = 0; i < particleDistancesBeforeUpdate.size(); i++) {
-                //         cout << fixed << setprecision(COUT_PRECISION)
-                //              << particleDistancesBeforeUpdate[i] << "m |";
-                //     }
-                //     cout << "---";
-                //     cout << "Speeds: ";
-                //     for (int i = 0; i < particleDistancesBeforeUpdate.size(); i++) {
-                //         cout << fixed << setprecision(COUT_PRECISION)
-                //              << particles[i]->getMagnitudeVelocity() << "m/s |";
-                //     }
-                //     cout << " at time: "
-                //          << (float)duration_cast<milliseconds>(timerClockMark -
-                //          timerClockStart)
-                //                     .count() /
-                //                 1000
-                //          << endl;
-                // }
-
-                // //? Logic: At the frame where the distance between the particle and the
-                // center
-                // //? increases, given that they will be travelling in one direction towards
-                // it, will
-                // //? mean that they have passed the center at that frame.
-
-                // for (int i = 0; i < particleDistancesBeforeUpdate.size(); i++) {
-                //     if (particleDistancesBeforeUpdate[i] < particleDistancesAfterUpdate[i]) {
-                //         particlesPastCenter++;
-                //         switch (i) {
-                //             case 0:  //? Red
-                //                 cout << "Red: ";
-                //                 break;
-                //             case 1:  //? Green
-                //                 cout << "Green: ";
-                //                 break;
-                //             case 2:  //? Blue
-                //                 cout << "Blue: ";
-                //                 break;
-                //             case 3:  //? Yellow
-                //                 cout << "Yellow: ";
-                //                 break;
-                //         }
-                //         cout << particlesPastCenter;
-                //         switch (particlesPastCenter) {
-                //             case 1:
-                //                 cout << "st";
-                //                 break;
-                //             case 2:
-                //                 cout << "nd";
-                //                 break;
-                //             case 3:
-                //                 cout << "rd";
-                //                 break;
-                //             case 4:
-                //                 cout << "th";
-                //                 break;
-                //         }
-                //         if (DEBUG_MODE_PROGRAMMING_CHALLENGE_1) {
-                //             cout << " at ";
-                //             particles[i]->getPosition().DisplayValues(COUT_PRECISION);
-                //             cout << " after it was from ";
-                //             MyVector3 previousPosition =
-                //                 MyVector3(particles[i]->getPosition() -
-                //                 particles[i]->getVelocity());
-                //             previousPosition.DisplayValues(COUT_PRECISION);
-                //         }
-                //         cout << endl;
-                //         cout << fixed << setprecision(COUT_PRECISION)
-                //              << "Mag. of Velocity: " << particles[i]->getMagnitudeVelocity()
-                //              << "m/s"
-                //              << endl;
-                //         cout << "Average Velocity: ";
-                //         particles[i]->getAverageVelocity().DisplayValues(COUT_PRECISION);
-                //         cout << "m/s" << endl;
-                //         timerClockMark = timerClock::now();
-                //         cout << "It took "
-                //              << (float)duration_cast<milliseconds>(timerClockMark -
-                //              timerClockStart)
-                //                         .count() /
-                //                     1000
-                //              << " seconds for it to reach the center." << endl
-                //              << endl;
-                //         particles[i]->stop();
-                //     }
-                // }
-
-                //* - - - - - END OF PROGRAMMING CHALLENGE 3 - - - - -
-
-                //? Comment this update call when using a template above
-                // physicsWorld.update((float)millisecond.count() / 1000);
+                physicsWorld.update((float)millisecond.count() / 1000);
                 //? Place physics related updates ABOVE this line
 
                 currentNanosecond -= currentNanosecond;
             }
+        } else {
         }
         //* - - - - - END OF FIXED UPDATE - - - - -
 

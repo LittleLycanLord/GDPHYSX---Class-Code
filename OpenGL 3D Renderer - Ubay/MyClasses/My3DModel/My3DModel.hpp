@@ -35,6 +35,12 @@ protected:
     //* ╚═══════════════════════════════╝
 public:
     My3DModel(std::string name,
+              My3DModel* model,
+              glm::vec3 position,
+              glm::mat4 positionMatrix,
+              glm::vec3 scale,
+              glm::vec3 orientation);
+    My3DModel(std::string name,
               std::string modelPath,
               std::string texturePath,
               std::string normalPath,
