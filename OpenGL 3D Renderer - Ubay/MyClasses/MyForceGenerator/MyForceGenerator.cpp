@@ -9,7 +9,7 @@ MyForceGenerator::MyForceGenerator() {}
 //* ╔═════════╗
 //* ║ Methods ║
 //* ╚═════════╝
-void MyForceGenerator::updateForce(MyParticle* targetParticle, float time) {
+void MyForceGenerator::updateForce(MyParticle* targetParticle, double time) {
     targetParticle->addForce(MyVector3());
 }
 

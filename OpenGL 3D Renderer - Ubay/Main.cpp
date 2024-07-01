@@ -403,14 +403,14 @@ int main(void) {
             if (currentNanosecond >= TIMESTEP) {
                 auto millisecond = duration_cast<milliseconds>(currentNanosecond);
                 if (DEBUG_MODE_PHYSICS_TIME)
-                    cout << "Millisecond: " << (float)millisecond.count() << endl;
+                    cout << "Millisecond: " << (double)millisecond.count() << endl;
                 if (DEBUG_MODE_PHYSICS_TIME) cout << "Physics Update" << endl;
 
                 //? Place physics related updates BELOW this line
                 //* - - - - - DEBUGGING - - - - -
                 //* - - - - - END OF DEBUGGING - - - - -
 
-                physicsWorld.update((float)millisecond.count() / 1000);
+                physicsWorld.update((double)millisecond.count() / 1000);
                 //? Place physics related updates ABOVE this line
 
                 currentNanosecond -= currentNanosecond;

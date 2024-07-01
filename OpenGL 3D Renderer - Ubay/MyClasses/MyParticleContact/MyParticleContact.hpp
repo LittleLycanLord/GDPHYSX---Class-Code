@@ -1,33 +1,41 @@
 #pragma once
 #include "../MyParticle/MyParticle.hpp"
+#include "../MyVectors/MyVector3.hpp"
 #include "stdafx.h"
 
-namespace MyPhysics {
-
+using namespace rendering;
 using namespace std;
 
-class MyForceGenerator {
+namespace MyPhysics {
+class MyParticleContact {
     //* ╔════════════╗
     //* ║ Attributes ║
     //* ╚════════════╝
-protected:
-
+private:
+    MyParticle* particles[2];
+    double restitition;
+    MyVector3 contactNormal;
     //* ╔═══════════════════════════════╗
     //* ║ Constructors & Deconstructors ║
     //* ╚═══════════════════════════════╝
 public:
-    MyForceGenerator();
+    MyParticleContact(MyParticle* particles[], double restitition, MyVector3 contactNormal);
 
     //* ╔═════════╗
     //* ║ Methods ║
     //* ╚═════════╝
-public:
-    virtual void updateForce(MyParticle* targetParticle, double time);
+protected:
+    void resolveVelocity(double time);
 
-private:
+public:
+    double calculateSeparatingSpeed();
+    void resolve(double time);
+
     //* ╔═══════════════════╗
     //* ║ Getters & Setters ║
     //* ╚═══════════════════╝
 public:
+    double getRestitition();
+    MyVector3 getContactNormal();
 };
 }  // namespace MyPhysics
