@@ -1,33 +1,36 @@
 #pragma once
-#include "../MyParticleContact/MyParticleContact.hpp"
-#include "../MyVectors/MyVector3.hpp"
-#include "map"
+#include "../../MyParticle/MyParticle.hpp"
+#include "../../MyParticleContact/MyParticleContact.hpp"
+#include "../MyParticleLink.hpp"
+#include "../../MyVectors/MyVector3.hpp"
 #include "stdafx.h"
 
-using namespace rendering;
+namespace MyPhysics {
+
 using namespace std;
 
-namespace MyPhysics {
-class MyContactResolver {
+class MyRod : public MyParticleLink {
     //* ╔════════════╗
     //* ║ Attributes ║
     //* ╚════════════╝
-private:
-    unsigned int maxIterations;
-    unsigned int currentIterations;
+protected:
+    double length;
+    double restitution;
 
     //* ╔═══════════════════════════════╗
     //* ║ Constructors & Deconstructors ║
     //* ╚═══════════════════════════════╝
 public:
-    MyContactResolver(unsigned int maxIterations);
+    MyRod(MyParticle* particleA, MyParticle* particleB, double length);
 
     //* ╔═════════╗
     //* ║ Methods ║
     //* ╚═════════╝
 public:
-    vector<MyParticleContact*> resolveContacts(vector<MyParticleContact*> contacts, double time);
+    virtual MyParticleContact* getContact();
 
+protected:
+private:
     //* ╔═══════════════════╗
     //* ║ Getters & Setters ║
     //* ╚═══════════════════╝

@@ -1,51 +1,36 @@
 #pragma once
-#include "../MyParticle/MyParticle.hpp"
+#include "../MyForceGenerator/MyForceGenerator.hpp"
 #include "../MyVectors/MyVector3.hpp"
 #include "stdafx.h"
 
-using namespace rendering;
+namespace MyPhysics {
+
 using namespace std;
 
-namespace MyPhysics {
-class MyParticleContact {
+class MyAnchoredSpring : public MyForceGenerator {
     //* ╔════════════╗
     //* ║ Attributes ║
     //* ╚════════════╝
-private:
-    double depth;
-    MyParticle* particleA;
-    MyParticle* particleB;
-    double restitition;
-    MyVector3 contactNormal;
+protected:
+    MyVector3 anchorPoint;
+    double springConstant;
+    double restLength;
     //* ╔═══════════════════════════════╗
     //* ║ Constructors & Deconstructors ║
     //* ╚═══════════════════════════════╝
 public:
-    MyParticleContact(MyParticle* particleA,
-                      MyParticle* particleB,
-                      double restitition,
-                      MyVector3 contactNormal);
+    MyAnchoredSpring(MyVector3 anchorPoint, double springConstant, double restLength);
 
     //* ╔═════════╗
     //* ║ Methods ║
     //* ╚═════════╝
-protected:
-    void resolveInterpenetration(double time);
-    void resolveVelocity(double time);
-
 public:
-    double calculateSeparatingSpeed();
-    void resolve(double time);
+    virtual void updateForce(MyParticle* targetParticle, double time);
 
+private:
     //* ╔═══════════════════╗
     //* ║ Getters & Setters ║
     //* ╚═══════════════════╝
 public:
-    double getDepth();
-    void setDepth(double depth);
-    double getRestitition();
-    void setRestitition(double restitition);
-    MyVector3 getContactNormal();
-    void setContactNormal(MyVector3 contactNormal);
 };
 }  // namespace MyPhysics

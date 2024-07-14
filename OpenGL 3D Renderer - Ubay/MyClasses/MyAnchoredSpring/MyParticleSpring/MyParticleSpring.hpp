@@ -1,33 +1,28 @@
 #pragma once
-#include "../MyParticleContact/MyParticleContact.hpp"
-#include "../MyVectors/MyVector3.hpp"
-#include "map"
+#include "../MyAnchoredSpring.hpp"
 #include "stdafx.h"
 
-using namespace rendering;
+namespace MyPhysics {
+
 using namespace std;
 
-namespace MyPhysics {
-class MyContactResolver {
+class MyParticleSpring : public MyAnchoredSpring {
     //* ╔════════════╗
     //* ║ Attributes ║
     //* ╚════════════╝
-private:
-    unsigned int maxIterations;
-    unsigned int currentIterations;
-
+protected:
+    MyParticle* otherParticle;
     //* ╔═══════════════════════════════╗
     //* ║ Constructors & Deconstructors ║
     //* ╚═══════════════════════════════╝
 public:
-    MyContactResolver(unsigned int maxIterations);
+    MyParticleSpring(MyParticle* otherParticle, double springConstant, double restLength);
 
     //* ╔═════════╗
     //* ║ Methods ║
     //* ╚═════════╝
 public:
-    vector<MyParticleContact*> resolveContacts(vector<MyParticleContact*> contacts, double time);
-
+private:
     //* ╔═══════════════════╗
     //* ║ Getters & Setters ║
     //* ╚═══════════════════╝
