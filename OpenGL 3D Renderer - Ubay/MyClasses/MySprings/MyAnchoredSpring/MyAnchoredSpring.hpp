@@ -1,6 +1,6 @@
 #pragma once
-#include "../MyForceGenerator/MyForceGenerator.hpp"
-#include "../MyVectors/MyVector3.hpp"
+#include "../../MyForceGenerator/MyForceGenerator.hpp"
+#include "../../MyVectors/MyVector3.hpp"
 #include "stdafx.h"
 
 namespace MyPhysics {
@@ -25,7 +25,7 @@ public:
     //* ║ Methods ║
     //* ╚═════════╝
 public:
-    virtual void updateForce(MyParticle* targetParticle, double time);
+    virtual void updateForce(MyParticle* targetParticle, double time) override;
 
 private:
     //* ╔═══════════════════╗
