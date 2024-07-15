@@ -12,11 +12,12 @@ class MyParticleContact {
     //* ║ Attributes ║
     //* ╚════════════╝
 private:
-    double depth;
     MyParticle* particleA;
     MyParticle* particleB;
     double restitition;
+    double depth;
     MyVector3 contactNormal;
+    
     //* ╔═══════════════════════════════╗
     //* ║ Constructors & Deconstructors ║
     //* ╚═══════════════════════════════╝
@@ -24,6 +25,7 @@ public:
     MyParticleContact(MyParticle* particleA,
                       MyParticle* particleB,
                       double restitition,
+                      double depth,
                       MyVector3 contactNormal);
 
     //* ╔═════════╗

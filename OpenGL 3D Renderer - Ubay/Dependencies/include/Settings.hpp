@@ -37,12 +37,14 @@ const std::string SKYBOX_BACK_TEXTURE_PATH      = "Assets/Skybox/underwater_bk.p
 //* - - - - - PHYSICS SETTINGS - - - - -
 const bool ONE_PIXEL_PER_METER                  = true;
 const bool POSITIVE_Y_ONLY                      = false;
+const bool ZOOM_IN_CENTER                       = true;
+const float ZOOM_IN_CENTER_SIZE                 = 200.0f;
 const float HEIGHT_OFFSET                       = -20.0f;
 const bool ORIGIN_MARKER                        = false;
 const double FRAMERATE                          = 60.0f;
 constexpr std::chrono::nanoseconds TIMESTEP     = 16ms;
 
-const double PARTICLE_SCALE                     = 3.0f;
+const double DEFAULT_PARTICLE_SIZE              = 1.0f;
 
 const float DEFAULT_GRAVITY_X                   = 0.0f;
 const float DEFAULT_GRAVITY_Y                   = -9.8f;

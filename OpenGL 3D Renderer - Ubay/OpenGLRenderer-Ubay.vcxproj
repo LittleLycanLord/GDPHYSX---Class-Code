@@ -144,8 +144,6 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MyClasses\My3DModel\My3DModel.cpp" />
     <ClCompile Include="MyClasses\My3DModel\tinyObjLoader.cpp" />
-    <ClCompile Include="MyClasses\MyAnchoredSpring\MyAnchoredSpring.cpp" />
-    <ClCompile Include="MyClasses\MyAnchoredSpring\MyParticleSpring\MyParticleSpring.cpp" />
     <ClCompile Include="MyClasses\MyCameras\MyCamera.cpp" />
     <ClCompile Include="MyClasses\MyCameras\MyOrthographicCamera\MyOrthographicCamera.cpp" />
     <ClCompile Include="MyClasses\MyCameras\MyPerspectiveCamera\MyPerspectiveCamera.cpp" />
@@ -168,6 +166,8 @@
     <ClCompile Include="MyClasses\MyParticle\MyRenderParticle\MyRenderParticle.cpp" />
     <ClCompile Include="MyClasses\MyPhysicsWorld\MyPhysicsWorld.cpp" />
     <ClCompile Include="MyClasses\MyShader\MyShader.cpp" />
+    <ClCompile Include="MyClasses\MySprings\MyAnchoredSpring\MyAnchoredSpring.cpp" />
+    <ClCompile Include="MyClasses\MySprings\MyParticleSpring\MyParticleSpring.cpp" />
     <ClCompile Include="MyClasses\MyTexture\MyTexture.cpp" />
     <ClCompile Include="MyClasses\MyVectors\MyVector2.cpp" />
     <ClCompile Include="MyClasses\MyVectors\MyVector3.cpp" />
@@ -178,8 +178,6 @@
     <ClInclude Include="Dependencies\include\Settings.hpp" />
     <ClInclude Include="Dependencies\include\stdafx.h" />
     <ClInclude Include="MyClasses\My3DModel\My3DModel.hpp" />
-    <ClInclude Include="MyClasses\MyAnchoredSpring\MyAnchoredSpring.hpp" />
-    <ClInclude Include="MyClasses\MyAnchoredSpring\MyParticleSpring\MyParticleSpring.hpp" />
     <ClInclude Include="MyClasses\MyCameras\MyCamera.hpp" />
     <ClInclude Include="MyClasses\MyCameras\MyOrthographicCamera\MyOrthographicCamera.hpp" />
     <ClInclude Include="MyClasses\MyCameras\MyPerspectiveCamera\MyPerspectiveCamera.hpp" />
@@ -201,6 +199,8 @@
     <ClInclude Include="MyClasses\MyParticle\MyRenderParticle\MyRenderParticle.hpp" />
     <ClInclude Include="MyClasses\MyPhysicsWorld\MyPhysicsWorld.hpp" />
     <ClInclude Include="MyClasses\MyShader\MyShader.hpp" />
+    <ClInclude Include="MyClasses\MySprings\MyAnchoredSpring\MyAnchoredSpring.hpp" />
+    <ClInclude Include="MyClasses\MySprings\MyParticleSpring\MyParticleSpring.hpp" />
     <ClInclude Include="MyClasses\MyTexture\MyTexture.hpp" />
     <ClInclude Include="MyClasses\MyVectors\MyVector2.hpp" />
     <ClInclude Include="MyClasses\MyVectors\MyVector3.hpp" />

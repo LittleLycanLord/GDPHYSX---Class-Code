@@ -13,14 +13,12 @@ MyAnchoredSpring::MyAnchoredSpring(MyVector3 anchorPoint, double springConstant,
 //* ║ Methods ║
 //* ╚═════════╝
 void MyAnchoredSpring::updateForce(MyParticle* targetParticle, double time) {
-    // MyVector3 position = targetParticle->getPosition();
-    // MyVector3 force    = position - this->anchorPoint;
-    // double magnitude   = force.getMagnitude();
-    double magnitude = MyVector3(targetParticle->getPosition() - this->anchorPoint).getMagnitude();
+    MyVector3 position = targetParticle->getPosition();
+    MyVector3 force    = position - this->anchorPoint;
+    double magnitude   = force.getMagnitude();
 
     double springForce = -this->springConstant * abs(magnitude - this->restLength);
-    targetParticle->addForce(
-        MyVector3(targetParticle->getPosition() - this->anchorPoint).getNormalized() * springForce);
+    targetParticle->addForce(force.getNormalized() * springForce);
 }
 
 //* ╔═══════════════════╗

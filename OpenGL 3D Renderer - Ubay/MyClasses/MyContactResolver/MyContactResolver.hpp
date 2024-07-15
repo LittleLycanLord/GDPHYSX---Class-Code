@@ -1,7 +1,7 @@
 #pragma once
 #include "../MyParticleContact/MyParticleContact.hpp"
 #include "../MyVectors/MyVector3.hpp"
-#include "map"
+#include "algorithm"
 #include "stdafx.h"
 
 using namespace rendering;
@@ -26,7 +26,7 @@ public:
     //* ║ Methods ║
     //* ╚═════════╝
 public:
-    vector<MyParticleContact*> resolveContacts(vector<MyParticleContact*> contacts, double time);
+    void resolveContacts(vector<MyParticleContact*> contacts, double time);
 
     //* ╔═══════════════════╗
     //* ║ Getters & Setters ║

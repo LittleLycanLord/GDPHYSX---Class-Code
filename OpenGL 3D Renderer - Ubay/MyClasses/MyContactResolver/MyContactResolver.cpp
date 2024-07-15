@@ -12,45 +12,36 @@ MyContactResolver::MyContactResolver(unsigned int maxIterations)
 //* ╔═════════╗
 //* ║ Methods ║
 //* ╚═════════╝
-vector<MyParticleContact*> MyContactResolver::resolveContacts(vector<MyParticleContact*> contacts,
-                                                              double time) {
-    map<MyParticleContact*, double> contactsWithSeparatingSpeed;
-    MyParticleContact* contactToBeResolved = contacts.front();
+void MyContactResolver::resolveContacts(vector<MyParticleContact*> contacts, double time) {
+    int currentIterations = 0;
 
-    //? Will try to iterate through all the given contacts and solve them one by one.
-    while (!contactsWithSeparatingSpeed.empty() || this->currentIterations < this->maxIterations) {
-        //? Though do note as we resolve a contact the other’s Separating Speed might change
-        for (MyParticleContact* contact : contacts) {
-            contactsWithSeparatingSpeed[contact] = contact->calculateSeparatingSpeed();
+    while (currentIterations < this->maxIterations) {
+        unsigned int currentIndex    = 0;
+        double lowestSeparatingSpeed = contacts[0]->calculateSeparatingSpeed();
+        double maximumDepth          = contacts[0]->getDepth();
+
+        for (int i = 1; i < contacts.size(); i++) {
+            double separatingSpeed = contacts[i]->calculateSeparatingSpeed();
+
+            if (separatingSpeed < lowestSeparatingSpeed &&
+                (separatingSpeed < 0 || contacts[i]->getDepth() > 0)) {
+                currentIndex          = i;
+                lowestSeparatingSpeed = separatingSpeed;
+
+                if (maximumDepth < contacts[i]->getDepth()) {
+                    maximumDepth = contacts[i]->getDepth();
+                }
+            }
         }
 
-        //? We need to prioritize the one with the LEAST separating speed first going up.
-        for (map<MyParticleContact*, double>::iterator contact =
-                 contactsWithSeparatingSpeed.begin();
-             contact != contactsWithSeparatingSpeed.end();
-             contact++) {
-            if (contact->second < contactsWithSeparatingSpeed[contactToBeResolved])
-                contactToBeResolved = contact->first;
+        if (lowestSeparatingSpeed >= 0 && maximumDepth <= 0) {
+            return;
         }
-        contactToBeResolved->resolve(time);
-        contactsWithSeparatingSpeed.erase(contactToBeResolved);
 
-        //? In order to escape the possible loops, we’ll need to set the limit to the following per
-        //? frame
-        this->currentIterations++;
+        contacts[currentIndex]->resolve(time);
+        currentIterations++;
     }
-    if (!contactsWithSeparatingSpeed.empty()) {
-        vector<MyParticleContact*> leftoverContacts;
-        for (map<MyParticleContact*, double>::iterator contact =
-                 contactsWithSeparatingSpeed.begin();
-             contact != contactsWithSeparatingSpeed.end();
-             contact++) {
-            leftoverContacts.push_back(contact->first);
-        }
-        return leftoverContacts;
-    }
-
-    return {};
+    return;
 }
 
 //* ╔═══════════════════╗

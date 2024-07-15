@@ -27,7 +27,7 @@ public:
     //* ║ Methods ║
     //* ╚═════════╝
 public:
-    virtual MyParticleContact* getContact();
+    virtual MyParticleContact* getContact() override;
 
 protected:
 private:

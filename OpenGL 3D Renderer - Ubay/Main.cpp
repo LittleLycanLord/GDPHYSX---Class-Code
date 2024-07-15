@@ -3,8 +3,8 @@
 #include "GLFW/glfw3.h"         
 
 #include "MyClasses/My3DModel/My3DModel.hpp"
-#include "MyClasses/MyAnchoredSpring/MyAnchoredSpring.hpp"
-#include "MyClasses/MyAnchoredSpring/MyParticleSpring/MyParticleSpring.hpp"
+#include "MyClasses/MySprings/MyAnchoredSpring/MyAnchoredSpring.hpp"
+#include "MyClasses/MySprings/MyParticleSpring/MyParticleSpring.hpp"
 #include "MyClasses/MyCameras/MyCamera.hpp"
 #include "MyClasses/MyCameras/MyOrthographicCamera/MyOrthographicCamera.hpp"
 #include "MyClasses/MyCameras/MyPerspectiveCamera/MyPerspectiveCamera.hpp"
@@ -266,15 +266,28 @@ int main(void) {
                 0.001f,
                 1000.0f));
         } else {
-            cameras.push_back(new MyOrthographicCamera("Orthographic Camera",
-                                                       glm::vec3(0.0f, 0.0f, WINDOW_WIDTH / 2),
-                                                       glm::vec3(0.0f, 0.0f, 0.0f),
-                                                       -WINDOW_WIDTH / 2,
-                                                       WINDOW_WIDTH / 2,
-                                                       -WINDOW_WIDTH / 2,
-                                                       WINDOW_WIDTH / 2,
-                                                       0.001f,
-                                                       1000.0f));
+            if (ZOOM_IN_CENTER) {
+                cameras.push_back(
+                    new MyOrthographicCamera("Orthographic Camera",
+                                             glm::vec3(0.0f, 0.0f, ZOOM_IN_CENTER_SIZE / 2),
+                                             glm::vec3(0.0f, 0.0f, 0.0f),
+                                             -ZOOM_IN_CENTER_SIZE / 2,
+                                             ZOOM_IN_CENTER_SIZE / 2,
+                                             -ZOOM_IN_CENTER_SIZE / 2,
+                                             ZOOM_IN_CENTER_SIZE / 2,
+                                             0.001f,
+                                             1000.0f));
+            } else {
+                cameras.push_back(new MyOrthographicCamera("Orthographic Camera",
+                                                           glm::vec3(0.0f, 0.0f, WINDOW_WIDTH / 2),
+                                                           glm::vec3(0.0f, 0.0f, 0.0f),
+                                                           -WINDOW_WIDTH / 2,
+                                                           WINDOW_WIDTH / 2,
+                                                           -WINDOW_WIDTH / 2,
+                                                           WINDOW_WIDTH / 2,
+                                                           0.001f,
+                                                           1000.0f));
+            }
         }
     }
 
@@ -360,7 +373,7 @@ int main(void) {
                                              glm::vec3(1.0f),
                                              glm::vec3(0.0f, 0.0f, 0.0f),
                                              glm::mat4(1.0f),
-                                             glm::vec3(PARTICLE_SCALE),
+                                             glm::vec3(DEFAULT_PARTICLE_SIZE),
                                              glm::vec3(0.0f));
     particleModel->loadModel();
 
@@ -379,27 +392,60 @@ int main(void) {
     //* - - - - - END OF PARTICLE SETUP - - - - -
 
     //* - - - - - PARTICLES - - - - -
-    physicsWorld.addParticles(
-        {// new MyParticleSystem(
-         // particleModel, MyVector3(0.0f, 0.0f, 0.0f), 10.0f, sparkCount, &physicsWorld)
-         new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f)),
-         new MyRenderParticle(particleModel, MyVector3(0.5f, 0.0f, 0.0f)),
-         new MyRenderParticle(particleModel, MyVector3(0.0f, 1.0f, 0.0f)),
-         new MyRenderParticle(particleModel, MyVector3(0.0f, 0.5f, 0.0f)),
-         new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f))});
+    physicsWorld.addParticles({
+       //? Particle System Test
+       // new MyParticleSystem(
+       // particleModel, MyVector3(0.0f, 0.0f, 0.0f), 10.0f, sparkCount, &physicsWorld)
+       //? Contact Resolver Test
+    //    new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f)),
+    //    new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f))
+       //? Rod, Particle Spring, and Anchored Spring Test
+        // new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f)),
+        // new MyRenderParticle(particleModel, MyVector3(0.5f, 0.0f, 0.0f)),
+        // new MyRenderParticle(particleModel, MyVector3(0.0f, 1.0f, 0.0f)),
+        // new MyRenderParticle(particleModel, MyVector3(0.0f, 0.5f, 0.0f)),
+        // new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f))
+    });
+
+    //? Contact Resolver Test: With Collision Detection
+    // physicsWorld.getParticleListAsVector()[0 + originParticles]->setPosition(
+    //     MyVector3(-20.0f, 0.0f, 0.0f));
+    // physicsWorld.getParticleListAsVector()[1 + originParticles]->setPosition(
+    //     MyVector3(20.0f, 0.0f, 0.0f));
+    // physicsWorld.getParticleListAsVector()[0 + originParticles]->setRadius(10.0f);
+    // physicsWorld.getParticleListAsVector()[1 + originParticles]->setRadius(10.0f);
+    // physicsWorld.getParticleListAsVector()[0 + originParticles]->addForce(
+    //     MyVector3(1000.0f, 0.0f, 0.0f));
+    // physicsWorld.getParticleListAsVector()[1 + originParticles]->addForce(
+    //     MyVector3(-1000.0f, 0.0f, 0.0f));
+
+    //? Contact Resolver Test: No Collision Detection (remove generateContacts from
+    // physicsWorld)
+    // physicsWorld.addParticleContact(
+    //     physicsWorld.getParticleListAsVector()[0 + originParticles],
+    //     physicsWorld.getParticleListAsVector()[1 + originParticles],
+    //     1,
+    //     0.5,
+    //     MyVector3(physicsWorld.getParticleListAsVector()[0 + originParticles]->getPosition()
+    //     -
+    //               physicsWorld.getParticleListAsVector()[1 + originParticles]->getPosition())
+    //         .getNormalized());
+
     //? Rod
     physicsWorld.getParticleListAsVector()[0 + originParticles]->setPosition(
         MyVector3(-75.0f, 25.0f, 0.0f));
-    physicsWorld.getParticleListAsVector()[0 + originParticles]->setUsesGravity(true);
     physicsWorld.getParticleListAsVector()[1 + originParticles]->setPosition(
         MyVector3(-25.0f, -25.0f, 0.0f));
-    // physicsWorld.getParticleListAsVector()[1 + originParticles]->setUsesGravity(true);
     MyVector3 rodLength =
         physicsWorld.getParticleListAsVector()[0 + originParticles]->getPosition() -
         physicsWorld.getParticleListAsVector()[1 + originParticles]->getPosition();
     physicsWorld.addRod(physicsWorld.getParticleListAsVector()[0 + originParticles],
                         physicsWorld.getParticleListAsVector()[1 + originParticles],
                         rodLength.getMagnitude());
+    // physicsWorld.getParticleListAsVector()[0 + originParticles]->setUsesGravity(true);
+    // physicsWorld.getParticleListAsVector()[1 + originParticles]->setUsesGravity(true);
+    physicsWorld.getParticleListAsVector()[0 + originParticles]->addForce(
+        MyVector3(0.0f, 1000.0f, 0.0f));
     // cout << "70.710678 | " << rodLength.getMagnitude() << endl;
 
     //? Particle Spring
@@ -420,7 +466,7 @@ int main(void) {
     physicsWorld.getParticleListAsVector()[4 + originParticles]->setPosition(
         MyVector3(25.0f, 25.0f, 0.0f));
     physicsWorld.getParticleListAsVector()[4 + originParticles]->setUsesGravity(true);
-    physicsWorld.addSpring(physicsWorld.getParticleListAsVector()[2 + originParticles],
+    physicsWorld.addSpring(physicsWorld.getParticleListAsVector()[4 + originParticles],
                            MyVector3(75.0f, -25.0f, 0.0f),
                            5.0f,
                            1.0f);

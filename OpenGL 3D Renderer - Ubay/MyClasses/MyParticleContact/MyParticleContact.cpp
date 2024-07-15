@@ -8,11 +8,12 @@ using namespace MyPhysics;
 MyParticleContact::MyParticleContact(MyParticle* particleA,
                                      MyParticle* particleB,
                                      double restitition,
+                                     double depth,
                                      MyVector3 contactNormal)
     : particleA(particleA),
       particleB(particleB),
-      depth(0),
       restitition(restitition),
+      depth(depth),
       contactNormal(contactNormal) {}
 
 //* ╔═════════╗
@@ -33,34 +34,33 @@ void MyParticleContact::resolveVelocity(double time) {
     if (this->particleB) totalMass += (double)1 / this->particleB->getMass();
 
     if (totalMass <= 0) return;
-    double impulseMagnitude = deltaSpeed / totalMass;
-    MyVector3 impulse       = this->contactNormal * impulseMagnitude;
+    double impulseMagnitude   = deltaSpeed / totalMass;
+    MyVector3 impulse         = this->contactNormal * impulseMagnitude;
 
-    MyVector3 newVelocityForA  = impulse * ((double)1 / this->particleA->getMass());
+    MyVector3 newVelocityForA = impulse * ((double)1 / this->particleA->getMass());
     this->particleA->setVelocity(this->particleA->getVelocity() + newVelocityForA);
     MyVector3 newVelocityForB = impulse * ((double)-1 / this->particleB->getMass());
     this->particleB->setVelocity(this->particleB->getVelocity() + newVelocityForB);
 }
 void MyParticleContact::resolveInterpenetration(double time) {
-    if (depth > 0) {
-        double totalMass = (double)1 / this->particleA->getMass();
-        if (this->particleB) totalMass += (double)1 / this->particleB->getMass();
+    if (this->depth <= 0) return;
+    // double totalMass = (double)1 / this->particleA->getMass();
+    double totalMass =
+        (double)1 / this->particleA->getMass() + (double)1 / this->particleB->getMass();
+    // if (this->particleB) totalMass += (double)1 / this->particleB->getMass();
 
-        if (totalMass > 0) {
-            double collisionResolutionByMass = depth / totalMass;
-            MyVector3 collisionResolution    = this->contactNormal * collisionResolutionByMass;
+    if (totalMass <= 0) return;
+    double collisionResolutionByMass = depth / totalMass;
+    MyVector3 collisionResolution    = this->contactNormal * collisionResolutionByMass;
 
-            MyVector3 particleAResolution =
-                collisionResolution * ((double)1 / this->particleA->getMass());
-            MyVector3 particleBResolution =
-                collisionResolution * (-(double)1 / this->particleB->getMass());
-
-            this->particleA->setPosition(this->particleA->getPosition() + particleAResolution);
-            this->particleB->setPosition(this->particleB->getPosition() + particleBResolution);
-        }
-
-        this->depth = 0;
+    MyVector3 particleAResolution = collisionResolution * ((double)1 / this->particleA->getMass());
+    this->particleA->setPosition(this->particleA->getPosition() + particleAResolution);
+    if (this->particleB) {
+        MyVector3 particleBResolution =
+            collisionResolution * (-(double)1 / this->particleB->getMass());
+        this->particleB->setPosition(this->particleB->getPosition() + particleBResolution);
     }
+    this->depth = 0;
 }
 void MyParticleContact::resolve(double time) {
     this->resolveVelocity(time);

@@ -28,7 +28,7 @@ void MyPhysicsWorld::update(double time) {
     }
     this->generateContacts();
     if (this->contacts.size() > 0) {
-        this->contacts = contactResolver.resolveContacts(this->contacts, time);
+        contactResolver.resolveContacts(this->contacts, time);
     }
 }
 void MyPhysicsWorld::addParticle(MyParticle* particleToAdd) {
@@ -45,10 +45,11 @@ void MyPhysicsWorld::addParticles(vector<MyParticle*> particlesToAdd) {
 
 void MyPhysicsWorld::addParticleContact(MyParticle* particleA,
                                         MyParticle* particleB,
-                                        double restitution) {
-    MyVector3 contactNormal = particleA->getPosition() - particleB->getPosition();
+                                        double restitution,
+                                        double depth,
+                                        MyVector3 direction) {
     this->contacts.push_back(
-        new MyParticleContact(particleA, particleB, restitution, contactNormal.getNormalized()));
+        new MyParticleContact(particleA, particleB, restitution, depth, direction));
 }
 void MyPhysicsWorld::addSpring(MyParticle* particle,
                                MyVector3 anchorPoint,
@@ -75,6 +76,9 @@ void MyPhysicsWorld::addRod(MyParticle* particleA, MyParticle* particleB, double
 
 void MyPhysicsWorld::generateContacts() {
     this->contacts.clear();
+
+    this->getOverlaps();
+
     for (MyParticleLink* link : this->particleLinks) {
         MyParticleContact* contact = link->getContact();
         if (contact != nullptr) this->contacts.push_back(contact);
@@ -88,6 +92,29 @@ void MyPhysicsWorld::updateGravity(MyParticle* particle) {
         this->forceRegistry.add(particle, &this->gravityGenerator);
     } else {
         this->forceRegistry.remove(particle, &this->gravityGenerator);
+    }
+}
+void MyPhysicsWorld::getOverlaps() {
+    for (int i = 0; i < this->particles.size() - 1; i++) {
+        list<MyParticle*>::iterator particle = next(this->particles.begin(), i);
+        for (int h = i + 1; h < this->particles.size(); h++) {
+            list<MyParticle*>::iterator otherParticle = next(this->particles.begin(), h);
+
+            MyVector3 squareMagnitudeVector =
+                (*particle)->getPosition() - (*otherParticle)->getPosition();
+            double squareMagnitude = squareMagnitudeVector.getSquareMagnitude();
+            double squareRadius    = ((*particle)->getRadius() + (*otherParticle)->getRadius());
+            squareRadius           = squareRadius * squareRadius;
+            if (squareMagnitude <= squareRadius) {
+                cout << "OVERLAP" << endl;
+                this->addParticleContact(
+                    (*particle),
+                    (*otherParticle),
+                    fmin((*particle)->getRestitution(), (*otherParticle)->getRestitution()),
+                    sqrt(squareRadius - squareMagnitude),
+                    squareMagnitudeVector.getNormalized());
+            }
+        }
     }
 }
 
