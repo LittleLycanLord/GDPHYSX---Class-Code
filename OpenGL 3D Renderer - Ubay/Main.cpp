@@ -400,11 +400,11 @@ int main(void) {
     //    new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f)),
     //    new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f))
        //? Rod, Particle Spring, and Anchored Spring Test
-        // new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f)),
-        // new MyRenderParticle(particleModel, MyVector3(0.5f, 0.0f, 0.0f)),
-        // new MyRenderParticle(particleModel, MyVector3(0.0f, 1.0f, 0.0f)),
-        // new MyRenderParticle(particleModel, MyVector3(0.0f, 0.5f, 0.0f)),
-        // new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f))
+        new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f)),
+        new MyRenderParticle(particleModel, MyVector3(0.5f, 0.0f, 0.0f)),
+        new MyRenderParticle(particleModel, MyVector3(0.0f, 1.0f, 0.0f)),
+        new MyRenderParticle(particleModel, MyVector3(0.0f, 0.5f, 0.0f)),
+        new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f))
     });
 
     //? Contact Resolver Test: With Collision Detection
