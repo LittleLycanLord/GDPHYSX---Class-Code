@@ -158,6 +158,8 @@
     <ClCompile Include="MyClasses\MyLights\MySpotLight\MySpotLight.cpp" />
     <ClCompile Include="MyClasses\MyNormal\MyNormal.cpp" />
     <ClCompile Include="MyClasses\MyNormal\stbi.cpp" />
+    <ClCompile Include="MyClasses\MyParticleConnections\MyAnchoredChain\MyAnchoredChain.cpp" />
+    <ClCompile Include="MyClasses\MyParticleConnections\MyAnchoredRope\MyAnchoredRope.cpp" />
     <ClCompile Include="MyClasses\MyParticleContact\MyParticleContact.cpp" />
     <ClCompile Include="MyClasses\MyParticleLink\MyParticleLink.cpp" />
     <ClCompile Include="MyClasses\MyParticleLink\MyRod\MyRod.cpp" />
@@ -193,6 +195,8 @@
     <ClInclude Include="MyClasses\MyLights\MyPointLight\MyPointLight.hpp" />
     <ClInclude Include="MyClasses\MyLights\MySpotLight\MySpotLight.hpp" />
     <ClInclude Include="MyClasses\MyNormal\MyNormal.hpp" />
+    <ClInclude Include="MyClasses\MyParticleConnections\MyAnchoredChain\MyAnchoredChain.hpp" />
+    <ClInclude Include="MyClasses\MyParticleConnections\MyAnchoredRope\MyAnchoredRope.hpp" />
     <ClInclude Include="MyClasses\MyParticleContact\MyParticleContact.hpp" />
     <ClInclude Include="MyClasses\MyParticleLink\MyParticleLink.hpp" />
     <ClInclude Include="MyClasses\MyParticleLink\MyRod\MyRod.hpp" />

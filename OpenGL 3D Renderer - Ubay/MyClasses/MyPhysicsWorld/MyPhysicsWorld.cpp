@@ -52,30 +52,36 @@ void MyPhysicsWorld::addParticleContact(MyParticle* particleA,
     this->contacts.push_back(
         new MyParticleContact(particleA, particleB, restitution, depth, direction));
 }
-void MyPhysicsWorld::addSpring(MyParticle* particle,
-                               MyVector3 anchorPoint,
-                               double springConstant,
-                               double restLength) {
+MyAnchoredSpring* MyPhysicsWorld::addSpring(MyParticle* particle,
+                                            MyVector3 anchorPoint,
+                                            double springConstant,
+                                            double restLength) {
     MyAnchoredSpring* anchoredSpring =
         new MyAnchoredSpring(anchorPoint, springConstant, restLength);
 
     this->forceRegistry.add(particle, anchoredSpring);
     if (SHOW_RENDER_LINES) this->addLine(new MyParticle(anchorPoint), particle);
+
+    return anchoredSpring;
 }
-void MyPhysicsWorld::addSpring(MyParticle* particleA,
-                               MyParticle* particleB,
-                               double springConstant,
-                               double restLength) {
+vector<MyParticleSpring*> MyPhysicsWorld::addSpring(MyParticle* particleA,
+                                                    MyParticle* particleB,
+                                                    double springConstant,
+                                                    double restLength) {
     MyParticleSpring* particleSpringA = new MyParticleSpring(particleB, springConstant, restLength);
     MyParticleSpring* particleSpringB = new MyParticleSpring(particleA, springConstant, restLength);
 
     this->forceRegistry.add(particleA, particleSpringA);
     this->forceRegistry.add(particleB, particleSpringB);
     if (SHOW_RENDER_LINES) this->addLine(particleA, particleB);
+
+    return {particleSpringA, particleSpringB};
 }
-void MyPhysicsWorld::addRod(MyParticle* particleA, MyParticle* particleB, double length) {
-    this->particleLinks.push_back(new MyRod(particleA, particleB, length));
+MyRod* MyPhysicsWorld::addRod(MyParticle* particleA, MyParticle* particleB, double length) {
+    MyRod* newRod = new MyRod(particleA, particleB, length);
+    this->particleLinks.push_back(newRod);
     if (SHOW_RENDER_LINES) this->addLine(particleA, particleB);
+    return newRod;
 }
 
 void MyPhysicsWorld::generateContacts() {
@@ -121,6 +127,70 @@ void MyPhysicsWorld::getOverlaps() {
         }
     }
 }
+void MyPhysicsWorld::addAnchoredRope(MyAnchoredRope* rope) {
+    if (rope->getSegmentCount() == 0) {
+        cout << "Rope length has to be a positive integer." << endl;
+    } else {
+        for (int i = 0; i < rope->getSegmentCount(); i++) {
+            MyRenderParticle* newParticle = new MyRenderParticle(rope->getModel(), rope->getTint());
+            newParticle->setUsesGravity(rope->getUsesGravity());
+            if (i == 0)
+                newParticle->setPosition(
+                    MyVector3(rope->getAnchorPoint().x,
+                              rope->getAnchorPoint().y + rope->getSegmentRestLength(),
+                              rope->getAnchorPoint().z));
+            else
+                newParticle->setPosition(MyVector3(
+                    rope->getParticles()[i - 1]->getPosition().x,
+                    rope->getParticles()[i - 1]->getPosition().y + rope->getSegmentRestLength(),
+                    rope->getParticles()[i - 1]->getPosition().z));
+            this->particles.push_back(newParticle);
+            rope->addParticle(newParticle);
+            if (i > 0) {
+                rope->addSegments(this->addSpring(newParticle,
+                                                  rope->getParticles()[i - 1],
+                                                  rope->getSpringConstant(),
+                                                  rope->getSegmentRestLength()));
+            } else {
+                rope->setHeadSegment(this->addSpring(newParticle,
+                                                     rope->getAnchorPoint(),
+                                                     rope->getSpringConstant(),
+                                                     rope->getSegmentRestLength()));
+            }
+        }
+    }
+}
+void MyPhysicsWorld::addAnchoredChain(MyAnchoredChain* chain) {
+    if (chain->getSegmentCount() == 0) {
+        cout << "Chain length has to be a positive integer." << endl;
+    } else {
+        for (int i = 0; i < chain->getSegmentCount(); i++) {
+            MyRenderParticle* newParticle =
+                new MyRenderParticle(chain->getModel(), chain->getTint());
+            newParticle->setUsesGravity(chain->getUsesGravity());
+            if (i == 0)
+                newParticle->setPosition(
+                    MyVector3(chain->getAnchorPoint().x,
+                              chain->getAnchorPoint().y + chain->getSegmentLength(),
+                              chain->getAnchorPoint().z));
+            else
+                newParticle->setPosition(MyVector3(
+                    chain->getParticles()[i - 1]->getPosition().x,
+                    chain->getParticles()[i - 1]->getPosition().y + chain->getSegmentLength(),
+                    chain->getParticles()[i - 1]->getPosition().z));
+            this->particles.push_back(newParticle);
+            chain->addParticle(newParticle);
+            if (i > 0) {
+                chain->addSegment(this->addRod(
+                    newParticle, chain->getParticles()[i - 1], chain->getSegmentLength()));
+            } else {
+                chain->setHeadSegment(
+                    this->addSpring(newParticle, chain->getAnchorPoint(), 1.0f, 1.0f));
+            }
+        }
+    }
+}
+
 void MyPhysicsWorld::addLine(MyParticle* particleA, MyParticle* particleB) {
     this->lines.push_back(new MyParticleLine(particleA, particleB));
 }

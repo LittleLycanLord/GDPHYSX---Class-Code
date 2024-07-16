@@ -5,6 +5,8 @@
 #include "../MyForceRegistry/MyForceRegistry.hpp"
 #include "../MyParticle/MyParticle.hpp"
 #include "../MyParticle/MyRenderParticle/MyRenderParticle.hpp"
+#include "../MyParticleConnections/MyAnchoredChain/MyAnchoredChain.hpp"
+#include "../MyParticleConnections/MyAnchoredRope/MyAnchoredRope.hpp"
 #include "../MyParticleContact/MyParticleContact.hpp"
 #include "../MyParticleLink/MyParticleLink.hpp"
 #include "../MyParticleLink/MyRod/MyRod.hpp"
@@ -50,15 +52,17 @@ public:
                             double restitution,
                             double depth,
                             MyVector3 direction);
-    void addSpring(MyParticle* particle,
-                   MyVector3 anchorPoint,
-                   double springConstant,
-                   double restLength);
-    void addSpring(MyParticle* particleA,
-                   MyParticle* particleB,
-                   double springConstant,
-                   double restLength);
-    void addRod(MyParticle* particleA, MyParticle* particleB, double restilengthtution);
+    MyAnchoredSpring* addSpring(MyParticle* particle,
+                                MyVector3 anchorPoint,
+                                double springConstant,
+                                double restLength);
+    vector<MyParticleSpring*> addSpring(MyParticle* particleA,
+                                        MyParticle* particleB,
+                                        double springConstant,
+                                        double restLength);
+    MyRod* addRod(MyParticle* particleA, MyParticle* particleB, double restilengthtution);
+    void addAnchoredRope(MyAnchoredRope* rope);
+    void addAnchoredChain(MyAnchoredChain* chain);
 
 protected:
     void generateContacts();
@@ -66,7 +70,6 @@ protected:
     void updateGravity(MyParticle* particle);
     void getOverlaps();
     void addLine(MyParticle* particleA, MyParticle* particleB);
-
     //* ╔═══════════════════╗
     //* ║ Getters & Setters ║
     //* ╚═══════════════════╝
