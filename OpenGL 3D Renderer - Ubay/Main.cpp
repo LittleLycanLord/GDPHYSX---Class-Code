@@ -24,6 +24,7 @@
 #include "MyClasses/MyParticleLink/MyParticleLink.hpp"
 #include "MyClasses/MyParticleLink/MyRod/MyRod.hpp"
 #include "MyClasses/MyPhysicsWorld/MyPhysicsWorld.hpp"
+#include "MyClasses/MyRenderLine/MyRenderLine.hpp"
 #include "MyClasses/MyShader/MyShader.hpp"
 #include "MyClasses/MyTexture/MyTexture.hpp"
 #include "MyClasses/Player/Player.hpp"
@@ -392,20 +393,23 @@ int main(void) {
     //* - - - - - END OF PARTICLE SETUP - - - - -
 
     //* - - - - - PARTICLES - - - - -
-    physicsWorld.addParticles({
-       //? Particle System Test
-       // new MyParticleSystem(
-       // particleModel, MyVector3(0.0f, 0.0f, 0.0f), 10.0f, sparkCount, &physicsWorld)
-       //? Contact Resolver Test
-    //    new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f)),
-    //    new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f))
-       //? Rod, Particle Spring, and Anchored Spring Test
-        new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f)),
-        new MyRenderParticle(particleModel, MyVector3(0.5f, 0.0f, 0.0f)),
-        new MyRenderParticle(particleModel, MyVector3(0.0f, 1.0f, 0.0f)),
-        new MyRenderParticle(particleModel, MyVector3(0.0f, 0.5f, 0.0f)),
-        new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f))
-    });
+    physicsWorld.addParticles(
+        {//? Particle System Test
+         // new MyParticleSystem(
+         // particleModel, MyVector3(0.0f, 0.0f, 0.0f), 10.0f, sparkCount, &physicsWorld)
+         //? Contact Resolver Test
+         //    new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f)),
+         //    new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f))
+         //? Rod, Particle Spring, and Anchored Spring Test
+         new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f)),
+         new MyRenderParticle(particleModel, MyVector3(0.5f, 0.0f, 0.0f)),
+         new MyRenderParticle(particleModel, MyVector3(0.0f, 1.0f, 0.0f)),
+         new MyRenderParticle(particleModel, MyVector3(0.0f, 0.5f, 0.0f)),
+         new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f))});
+
+    MyParticleLine* line =
+        new MyParticleLine(physicsWorld.getParticleListAsVector()[0 + originParticles],
+                           physicsWorld.getParticleListAsVector()[1 + originParticles]);
 
     //? Contact Resolver Test: With Collision Detection
     // physicsWorld.getParticleListAsVector()[0 + originParticles]->setPosition(
@@ -491,7 +495,6 @@ int main(void) {
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         activeCamera->setView(
             glm::lookAt(activeCamera->getPosition(), activeCamera->getViewCenter(), WorldUp));
 
@@ -759,8 +762,17 @@ int main(void) {
                     GL_TRIANGLES, 0, GLint(model->getFullVertexData().size() / STRIDE_LENGTH));
             //* - - - - - END OF MODEL RENDERING - - - - -
         }
-
         //* - - - - - END OF MODEL UPDATE - - - - -
+
+        //* - - - - - PARTICLE LINE RENDERING - - - - -
+        for (MyParticleLine* line : physicsWorld.lines) {
+            if (SHOW_RENDER_LINES) {
+                line->update(activeCamera->getProjection() * activeCamera->getView());
+                line->draw();
+            }
+        }
+        //* - - - - - END OF PARTICLE LINE RENDERING - - - - -
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

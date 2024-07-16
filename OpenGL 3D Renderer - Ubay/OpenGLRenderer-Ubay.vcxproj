@@ -165,6 +165,8 @@
     <ClCompile Include="MyClasses\MyParticle\MyParticleSystem\MyParticleSystem.cpp" />
     <ClCompile Include="MyClasses\MyParticle\MyRenderParticle\MyRenderParticle.cpp" />
     <ClCompile Include="MyClasses\MyPhysicsWorld\MyPhysicsWorld.cpp" />
+    <ClCompile Include="MyClasses\MyRenderLine\MyParticleLine\MyParticleLine.cpp" />
+    <ClCompile Include="MyClasses\MyRenderLine\MyRenderLine.cpp" />
     <ClCompile Include="MyClasses\MyShader\MyShader.cpp" />
     <ClCompile Include="MyClasses\MySprings\MyAnchoredSpring\MyAnchoredSpring.cpp" />
     <ClCompile Include="MyClasses\MySprings\MyParticleSpring\MyParticleSpring.cpp" />
@@ -198,6 +200,8 @@
     <ClInclude Include="MyClasses\MyParticle\MyParticleSystem\MyParticleSystem.hpp" />
     <ClInclude Include="MyClasses\MyParticle\MyRenderParticle\MyRenderParticle.hpp" />
     <ClInclude Include="MyClasses\MyPhysicsWorld\MyPhysicsWorld.hpp" />
+    <ClInclude Include="MyClasses\MyRenderLine\MyParticleLine\MyParticleLine.hpp" />
+    <ClInclude Include="MyClasses\MyRenderLine\MyRenderLine.hpp" />
     <ClInclude Include="MyClasses\MyShader\MyShader.hpp" />
     <ClInclude Include="MyClasses\MySprings\MyAnchoredSpring\MyAnchoredSpring.hpp" />
     <ClInclude Include="MyClasses\MySprings\MyParticleSpring\MyParticleSpring.hpp" />

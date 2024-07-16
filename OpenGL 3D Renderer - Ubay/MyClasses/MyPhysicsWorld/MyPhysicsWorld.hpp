@@ -8,6 +8,7 @@
 #include "../MyParticleContact/MyParticleContact.hpp"
 #include "../MyParticleLink/MyParticleLink.hpp"
 #include "../MyParticleLink/MyRod/MyRod.hpp"
+#include "../MyRenderLine/MyParticleLine/MyParticleLine.hpp"
 #include "../MySprings/MyAnchoredSpring/MyAnchoredSpring.hpp"
 #include "../MySprings/MyParticleSpring/MyParticleSpring.hpp"
 #include "stdafx.h"
@@ -24,6 +25,7 @@ public:
     list<My3DModel*>* renderingList;
     list<MyParticle*> particles;
     list<MyParticleLink*> particleLinks;
+    list<MyParticleLine*> lines;
     vector<MyParticleContact*> contacts;
     int updateCount;
     MyForceRegistry forceRegistry;
@@ -63,6 +65,7 @@ protected:
     void updateParticleList();
     void updateGravity(MyParticle* particle);
     void getOverlaps();
+    void addLine(MyParticle* particleA, MyParticle* particleB);
 
     //* ╔═══════════════════╗
     //* ║ Getters & Setters ║

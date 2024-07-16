@@ -9,6 +9,7 @@ MyPhysicsWorld::MyPhysicsWorld(list<My3DModel*>* renderingList)
     : renderingList(renderingList),
       particles({}),
       particleLinks({}),
+      lines({}),
       contacts({}),
       updateCount(0),
       forceRegistry(MyForceRegistry()),
@@ -59,6 +60,7 @@ void MyPhysicsWorld::addSpring(MyParticle* particle,
         new MyAnchoredSpring(anchorPoint, springConstant, restLength);
 
     this->forceRegistry.add(particle, anchoredSpring);
+    if (SHOW_RENDER_LINES) this->addLine(new MyParticle(anchorPoint), particle);
 }
 void MyPhysicsWorld::addSpring(MyParticle* particleA,
                                MyParticle* particleB,
@@ -69,9 +71,11 @@ void MyPhysicsWorld::addSpring(MyParticle* particleA,
 
     this->forceRegistry.add(particleA, particleSpringA);
     this->forceRegistry.add(particleB, particleSpringB);
+    if (SHOW_RENDER_LINES) this->addLine(particleA, particleB);
 }
 void MyPhysicsWorld::addRod(MyParticle* particleA, MyParticle* particleB, double length) {
     this->particleLinks.push_back(new MyRod(particleA, particleB, length));
+    if (SHOW_RENDER_LINES) this->addLine(particleA, particleB);
 }
 
 void MyPhysicsWorld::generateContacts() {
@@ -116,6 +120,9 @@ void MyPhysicsWorld::getOverlaps() {
             }
         }
     }
+}
+void MyPhysicsWorld::addLine(MyParticle* particleA, MyParticle* particleB) {
+    this->lines.push_back(new MyParticleLine(particleA, particleB));
 }
 
 //* ╔═══════════════════╗

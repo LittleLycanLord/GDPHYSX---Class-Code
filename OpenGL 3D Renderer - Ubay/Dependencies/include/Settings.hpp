@@ -41,6 +41,7 @@ const bool ZOOM_IN_CENTER                       = true;
 const float ZOOM_IN_CENTER_SIZE                 = 200.0f;
 const float HEIGHT_OFFSET                       = -20.0f;
 const bool ORIGIN_MARKER                        = false;
+const bool SHOW_RENDER_LINES                    = true;
 const double FRAMERATE                          = 60.0f;
 constexpr std::chrono::nanoseconds TIMESTEP     = 16ms;
 
