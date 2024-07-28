@@ -1,8 +1,8 @@
 #pragma once
 #include "../../MyParticle/MyParticle.hpp"
 #include "../../MyParticleContact/MyParticleContact.hpp"
-#include "../MyParticleLink.hpp"
 #include "../../MyVectors/MyVector3.hpp"
+#include "../MyParticleLink.hpp"
 #include "stdafx.h"
 
 namespace MyPhysics {
@@ -15,7 +15,7 @@ class MyRod : public MyParticleLink {
     //* ╚════════════╝
 protected:
     double length;
-    double restitution;
+    double restitution = 0.0f;
 
     //* ╔═══════════════════════════════╗
     //* ║ Constructors & Deconstructors ║

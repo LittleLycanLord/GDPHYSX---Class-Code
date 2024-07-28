@@ -13,20 +13,24 @@ class MyParticle {
     //* ║ Attributes ║
     //* ╚════════════╝
 protected:
-    double mass;         //? in kg
-    double radius;       //? in m
-    double restitution;  //? in sticky units
-    MyVector3 position;  //? in m
+    double mass;                 //? in kg
+    double radius;               //? in m
+    double restitution;          //? in sticky units
+    MyVector3 position;          //? in m
+    MyVector3 originalPosition;  //? in m
 
-    double damping   = DEFAULT_DAMPING;  //? [0 -> 1]; the lower the value, the higher the drag
-    double lifetime  = 9999999.0f;       //? in s
-    bool isDestroyed = false;
-    bool usesGravity = false;
+    double damping    = DEFAULT_DAMPING;  //? [0 -> 1]; the lower the value, the higher the drag
+    double lifetime   = 9999999.0f;       //? in s
+    bool isDestroyed  = false;
+    bool usesGravity  = false;
+    bool hasCollision = true;
+    bool isPersistent   = false;
     double magnitudeVelocity   = 0.0f;         //? in m/s
     MyVector3 totalVelocity    = MyVector3();  //? in m/s
     MyVector3 averageVelocity  = MyVector3();  //? in m/s
     MyVector3 velocity         = MyVector3();  //? in m/s
     MyVector3 acceleration     = MyVector3();  //? in m/s^2
+    MyVector3 testAcceleration = MyVector3();  //? in m/s^2
 
     MyVector3 accumulatedForce = MyVector3();  //? in kg m/s^2
 
@@ -67,7 +71,7 @@ public:
     double getRadius();
     void setRadius(double radius);
     double getRestitution();
-    void setRestitution (double restitution);
+    void setRestitution(double restitution);
     double getDamping();
     void setDamping(double damping);
     double getLifetime();
@@ -75,8 +79,14 @@ public:
     bool getIsDestroyed();
     bool getUsesGravity();
     void setUsesGravity(bool usesGravity);
+    bool getHasCollision();
+    void setHasCollision(bool hasCollision);
+    bool getIsPersistent();
+    void setIsPersistent(bool isPersistent);
     MyVector3 getPosition();
     void setPosition(MyVector3 position);
+    MyVector3 getOriginalPosition();
+    void setOriginalPosition(MyVector3 originalPosition, bool updateCurrentPosition);
     void setPosition(double x, double y, double z);
     double getMagnitudeVelocity();
     MyVector3 getAverageVelocity();
@@ -86,5 +96,6 @@ public:
     MyVector3 getAcceleration();
     void setAcceleration(MyVector3 acceleration);
     void setAcceleration(double x, double y, double z);
+    MyVector3 getTestAcceleration();
 };
 }  // namespace MyPhysics

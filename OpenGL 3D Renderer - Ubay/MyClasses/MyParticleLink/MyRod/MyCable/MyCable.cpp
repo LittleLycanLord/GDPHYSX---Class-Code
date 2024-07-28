@@ -1,19 +1,17 @@
-#include "MyRod.hpp"
+#include "MyCable.hpp"
 
 using namespace MyPhysics;
 
 //* ╔═══════════════════════════════╗
 //* ║ Constructors & Deconstructors ║
 //* ╚═══════════════════════════════╝
-MyRod::MyRod(MyParticle* particleA, MyParticle* particleB, double length)
-    : MyParticleLink(particleA, particleB),
-      length(length),
-      restitution(0.0f) {}
+MyCable::MyCable(MyParticle* particleA, MyParticle* particleB, double length)
+    : MyRod(particleA, particleB, length) {}
 
 //* ╔═════════╗
 //* ║ Methods ║
 //* ╚═════════╝
-MyParticleContact* MyRod::getContact() {
+MyParticleContact* MyCable::getContact() {
     if (this->getDistanceBetweenParticles() == this->length) return nullptr;
     MyVector3 direction =
         MyVector3(this->particleB->getPosition() - this->particleA->getPosition()).getNormalized();
@@ -26,15 +24,9 @@ MyParticleContact* MyRod::getContact() {
                                         0.0f,
                                         this->getDistanceBetweenParticles() - this->length,
                                         direction);
-    } else if (this->getDistanceBetweenParticles() < this->length) {
-        contact = new MyParticleContact(this->particleA,
-                                        this->particleB,
-                                        0.0f,
-                                        this->length - this->getDistanceBetweenParticles(),
-                                        direction * -1);
     } else
         return nullptr;
-    contact->setIsRod(false);
+    contact->setIsRod(true);
     contact->setRestitition(0.0f);
     return contact;
 }

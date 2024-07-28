@@ -2,7 +2,6 @@
 #include "../../My3DModel/My3DModel.hpp"
 #include "../../MyParticle/MyRenderParticle/MyRenderParticle.hpp"
 #include "../../MyParticleLink/MyRod/MyRod.hpp"
-#include "../../MySprings/MyAnchoredSpring/MyAnchoredSpring.hpp"
 #include "../../MyVectors/MyVector3.hpp"
 #include "stdafx.h"
 
@@ -18,13 +17,13 @@ class MyAnchoredChain {
 protected:
     My3DModel* model;
     MyVector3 tint;
+    MyParticle* anchorParticle;
     MyVector3 anchorPoint;
     unsigned int segmentCount;
     double segmentLength;
     double totalLength;
-    bool usesGravity;
+    bool usesGravity = true;
 
-    MyAnchoredSpring* headSegment;
     vector<MyParticle*> particles;
     vector<MyRod*> segments;
     //* ╔═══════════════════════════════╗
@@ -34,13 +33,16 @@ public:
     //? Unknown chain segment count
     MyAnchoredChain(My3DModel* model,
                     MyVector3 tint,
+                    MyParticle* anchorParticle,
                     MyVector3 anchorPoint,
                     double segmentLength,
                     double totalLength,
                     bool usesGravity);
+
     //? Unknown chain segment length
     MyAnchoredChain(My3DModel* model,
                     MyVector3 tint,
+                    MyParticle* anchorParticle,
                     MyVector3 anchorPoint,
                     unsigned int segmentCount,
                     double totalLength,
@@ -51,7 +53,8 @@ public:
 public:
     void addParticle(MyParticle* particle);
     void addSegment(MyRod* rod);
-    void setHeadSegment(MyAnchoredSpring* anchoredSpring);
+    void setHeadSegment(MyRod* headRod);
+    float getActualLength();
 
 private:
     //* ╔═══════════════════╗
@@ -60,13 +63,14 @@ private:
 public:
     My3DModel* getModel();
     MyVector3 getTint();
+    MyParticle* getAnchorParticle();
     MyVector3 getAnchorPoint();
     unsigned int getSegmentCount();
     double getSegmentLength();
     double getTotalLength();
     bool getUsesGravity();
 
-    MyAnchoredSpring* getHeadSegment();
+    MyRod* getHeadSegment();
     vector<MyParticle*> getParticles();
     vector<MyRod*> getSegments();
 };

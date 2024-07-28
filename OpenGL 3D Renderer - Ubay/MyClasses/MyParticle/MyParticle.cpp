@@ -9,22 +9,26 @@ MyParticle::MyParticle()
     : mass(1.0f),
       radius(DEFAULT_PARTICLE_SIZE),
       restitution(1.0f),
-      position(0.0f) {}
+      position(0.0f),
+      originalPosition(0.0f) {}
 MyParticle::MyParticle(vector<double> attributes)
     : mass(attributes[0]),
       radius(attributes[1]),
       restitution(attributes[2]),
-      position(0.0f) {}
+      position(0.0f),
+      originalPosition(0.0f) {}
 MyParticle::MyParticle(MyVector3 position)
     : mass(1.0f),
       radius(DEFAULT_PARTICLE_SIZE),
       restitution(1.0f),
-      position(position) {}
+      position(position),
+      originalPosition(position) {}
 MyParticle::MyParticle(vector<double> attributes, MyVector3 position)
     : mass(attributes[0]),
       radius(attributes[1]),
       restitution(attributes[2]),
-      position(position) {}
+      position(position),
+      originalPosition(position) {}
 
 //* ╔═════════╗
 //* ║ Methods ║
@@ -39,12 +43,11 @@ void MyParticle::updatePosition(double time) {
                                    pow((finalPosition.y - initialPosition.y), 2) +
                                    pow((finalPosition.z - initialPosition.z), 2)) *
                               FRAMERATE;
-    this->updateModel();
 }
 void MyParticle::updateVelocity(double time) {
     this->acceleration += this->accumulatedForce * (1 / this->mass);
     this->velocity = this->velocity + (this->acceleration * time);
-    this->velocity = this->velocity * powf(damping, time);
+    this->velocity = this->velocity * pow(damping, time);
 }
 void MyParticle::updateAverageVelocity(int physicsUpdateCount) {
     this->totalVelocity += this->velocity;
@@ -52,15 +55,26 @@ void MyParticle::updateAverageVelocity(int physicsUpdateCount) {
 }
 
 void MyParticle::update(double time, int physicsUpdateCount) {
+    if (isPersistent) {
+        if (this->position.x != this->originalPosition.x ||
+            this->position.y != this->originalPosition.y ||
+            this->position.z != this->originalPosition.z)
+            this->position = this->originalPosition;
+        this->resetForce();
+        this->stop();
+        this->updateModel();
+        return;
+    }
     this->updatePosition(time);
+    this->updateModel();
     this->updateVelocity(time);
     //* - - - - - ADDITIONAL UPDATES - - - - -
-    this->updateAverageVelocity(physicsUpdateCount);
-    if (this->lifetime <= 0.0f) {
-        this->destroy();
-    } else {
-        this->lifetime -= time;
-    }
+    // this->updateAverageVelocity(physicsUpdateCount);
+    // if (this->lifetime <= 0.0f) {
+    //     this->destroy();
+    // } else {
+    //     this->lifetime -= time;
+    // }
     //* - - - - - END OF ADDITIONAL UPDATES - - - - -
     this->resetForce();
 }
@@ -78,8 +92,9 @@ void MyParticle::moveTowards(MyVector3 target, double magnitudeVelocity) {
 }
 void MyParticle::addForce(MyVector3 force) { this->accumulatedForce += force; }
 void MyParticle::resetForce() {
-    this->accumulatedForce = MyVector3();
-    this->acceleration     = MyVector3();
+    this->accumulatedForce = MyVector3(0.0f, 0.0f, 0.0f);
+    this->testAcceleration = this->acceleration;
+    this->acceleration     = MyVector3(0.0f, 0.0f, 0.0f);
 }
 void MyParticle::extendLifetime(double amount) { this->lifetime += amount; }
 void MyParticle::stop() {
@@ -108,8 +123,17 @@ void MyParticle::setLifetime(double lifetime) { this->lifetime = lifetime; }
 bool MyParticle::getIsDestroyed() { return this->isDestroyed; }
 bool MyParticle::getUsesGravity() { return this->usesGravity; }
 void MyParticle::setUsesGravity(bool usesGravity) { this->usesGravity = usesGravity; }
+bool MyParticle::getHasCollision() { return this->hasCollision; }
+void MyParticle::setHasCollision(bool hasCollision) { this->hasCollision = hasCollision; }
+bool MyParticle::getIsPersistent() { return this->isPersistent; }
+void MyParticle::setIsPersistent(bool isPersistent) { this->isPersistent = isPersistent; }
 MyVector3 MyParticle::getPosition() { return this->position; }
 void MyParticle::setPosition(MyVector3 position) { this->position = position; }
+MyVector3 MyParticle::getOriginalPosition() { return this->originalPosition; }
+void MyParticle::setOriginalPosition(MyVector3 originalPosition, bool updateCurrentPosition) {
+    this->originalPosition = originalPosition;
+    if (updateCurrentPosition) this->position = originalPosition;
+}
 void MyParticle::setPosition(double x, double y, double z) { this->position = MyVector3(x, y, z); }
 double MyParticle::getMagnitudeVelocity() { return this->magnitudeVelocity; }
 MyVector3 MyParticle::getAverageVelocity() { return this->averageVelocity; }
@@ -123,3 +147,4 @@ void MyParticle::setAcceleration(MyVector3 acceleration) {
 void MyParticle::setAcceleration(double x, double y, double z) {
     this->acceleration = MyVector3(x, y, z);
 }
+MyVector3 MyParticle::getTestAcceleration() { return this->testAcceleration; }

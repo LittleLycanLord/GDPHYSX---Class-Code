@@ -24,6 +24,7 @@
 #include "MyClasses/MyParticle/MyRenderParticle/MyRenderParticle.hpp"
 #include "MyClasses/MyParticleContact/MyParticleContact.hpp"
 #include "MyClasses/MyParticleLink/MyParticleLink.hpp"
+#include "MyClasses/MyParticleLink/MyRod/MyCable/MyCable.hpp"
 #include "MyClasses/MyParticleLink/MyRod/MyRod.hpp"
 #include "MyClasses/MyPhysicsWorld/MyPhysicsWorld.hpp"
 #include "MyClasses/MyRenderLine/MyRenderLine.hpp"
@@ -55,7 +56,8 @@ Player* player                              = NULL;
 //* - - - - - PHYSICS - - - - -
 using physicsClock                          = high_resolution_clock;
 using timerClock                            = steady_clock;
-bool pausePhysics = false;
+bool pausePhysics = true;
+bool physicsStep = false;
 auto timerClockStart                        = timerClock::now();
 auto timerClockMark                         = timerClock::now();
 nanoseconds currentNanosecond(0);
@@ -99,6 +101,59 @@ void Key_Callback(
                cout << "Current Camera Switched to: " + activeCamera->getName() << endl;
             }
             break;
+        //* Physics Step
+        case GLFW_KEY_P:
+            if (action == GLFW_PRESS) {
+                if(pausePhysics)
+                    physicsStep = true;
+            }
+            break;
+    }
+}
+
+void createNewtonsCradle(My3DModel* particleModel,
+                         double cableLength,
+                         double particleGap,
+                         double particleRadius,
+                         double gravityStrength,
+                         MyVector3 appliedForce) {
+    physicsWorld.setGravity(gravityStrength);
+
+    //? Cable Pendulum
+    //? Create the 2 Ends
+    double x = 0 - ((particleRadius) * 6);
+    for (int i = 0; i < 5; i++) {
+        x += particleRadius * 2;
+        MyRenderParticle* particleA =
+            new MyRenderParticle(particleModel, MyVector3(1.0f, 0.2f, 0.2f));
+        MyRenderParticle* particleB =
+            new MyRenderParticle(particleModel, MyVector3(0.2f, 0.2f, 1.0f));
+        physicsWorld.addParticle(particleA, false);
+        physicsWorld.addParticle(particleB, false);
+        particleA->setOriginalPosition(MyVector3(x, 10.0f, -particleGap / 2.0f), true);
+        particleA->setRadius(particleRadius);
+        particleB->setOriginalPosition(MyVector3(x, 10.0f, particleGap / 2.0f), true);
+        particleB->setRadius(particleRadius);
+
+        MyRenderParticle* particleC =
+            new MyRenderParticle(particleModel, MyVector3(0.2f, 1.0f, 0.2f));
+        physicsWorld.addParticle(particleC, true);
+        particleC->setOriginalPosition(MyVector3(x, 0.0f, 0.0f), true);
+        particleC->setRadius(particleRadius);
+
+        particleA->setIsPersistent(true);
+        particleB->setIsPersistent(true);
+
+        physicsWorld.addCable(particleA, particleC, cableLength);
+        physicsWorld.addCable(particleB, particleC, cableLength);
+
+        particleA->setRestitution(0.9f);
+        particleB->setRestitution(0.9f);
+        particleC->setRestitution(0.9f);
+        particleA->setMass(50.0f);
+        particleB->setMass(50.0f);
+        particleC->setMass(50.0f);
+        if (i == 0) particleC->addForce(appliedForce);
     }
 }
 
@@ -386,149 +441,439 @@ int main(void) {
             {new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f)),
              new MyRenderParticle(particleModel, MyVector3(0.0f, 1.0f, 0.0f)),
              new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f)),
-             new MyRenderParticle(particleModel, MyVector3(1.0f, 1.0f, 1.0f))});
-        physicsWorld.getParticleListAsVector()[0]->setPosition(MyVector3(100.0f, 0.0f, 0.0f));
-        physicsWorld.getParticleListAsVector()[1]->setPosition(MyVector3(0.0f, 100.0f, 0.0f));
-        physicsWorld.getParticleListAsVector()[2]->setPosition(MyVector3(0.0f, 0.0f, 100.0f));
-        originParticles = 4;
+             new MyRenderParticle(particleModel, MyVector3(1.0f, 1.0f, 1.0f))},
+            false);
+        physicsWorld.getParticleListAsVector()[0]->setPosition(MyVector3(10.0f, 0.0f, 0.0f));
+        physicsWorld.getParticleListAsVector()[0]->setHasCollision(false);
+        physicsWorld.getParticleListAsVector()[0]->setRadius(0.1f);
+        physicsWorld.getParticleListAsVector()[1]->setPosition(MyVector3(0.0f, 10.0f, 0.0f));
+        physicsWorld.getParticleListAsVector()[1]->setHasCollision(false);
+        physicsWorld.getParticleListAsVector()[1]->setRadius(0.1f);
+        physicsWorld.getParticleListAsVector()[2]->setPosition(MyVector3(0.0f, 0.0f, 10.0f));
+        physicsWorld.getParticleListAsVector()[2]->setHasCollision(false);
+        physicsWorld.getParticleListAsVector()[2]->setRadius(0.1f);
+        physicsWorld.getParticleListAsVector()[3]->setHasCollision(false);
+        physicsWorld.getParticleListAsVector()[3]->setRadius(0.1f);
+        originParticles = physicsWorld.getParticleListAsVector().size();
     }
     //* - - - - - END OF PARTICLE SETUP - - - - -
 
     //* - - - - - PARTICLES - - - - -
-    physicsWorld.addParticles({
-       //? Particle System Test
-       // new MyParticleSystem(
-       // particleModel, MyVector3(0.0f, 0.0f, 0.0f), 10.0f, sparkCount, &physicsWorld)
-       //? Contact Resolver Test
-       //    new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f)),
-       //    new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f))
-       //? Rod, Particle Spring, and Anchored Spring Test
-       //  new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f)),
-       //  new MyRenderParticle(particleModel, MyVector3(0.5f, 0.0f, 0.0f)),
-       //  new MyRenderParticle(particleModel, MyVector3(0.0f, 1.0f, 0.0f)),
-       //  new MyRenderParticle(particleModel, MyVector3(0.0f, 0.5f, 0.0f)),
-       //  new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f))
-    });
+    // //? Damping - Drag Test : PASS
+    // //? PASS if: The test particle slows down over time due to it's damping attribute.
+    // MyRenderParticle* testParticle =
+    //     new MyRenderParticle(particleModel, MyVector3(1.0f, 1.0f, 1.0f));
+    // physicsWorld.addParticle(testParticle, false);
+    // testParticle->setPosition(MyVector3(-10.0f, 0.0f, 0.0f));
+    // testParticle->addForce(MyVector3(10.0f, 0.0f, 0.0f));
+    // //? Debugging Code:
+    // // testParticle->getVelocity().DisplayValuesIndividually("Velocity: ", 2.0f);
 
-    //? Contact Resolver Test: With Collision Detection
-    // physicsWorld.getParticleListAsVector()[0 + originParticles]->setPosition(
-    //     MyVector3(-20.0f, 0.0f, 0.0f));
-    // physicsWorld.getParticleListAsVector()[1 + originParticles]->setPosition(
-    //     MyVector3(20.0f, 0.0f, 0.0f));
-    // physicsWorld.getParticleListAsVector()[0 + originParticles]->setRadius(10.0f);
-    // physicsWorld.getParticleListAsVector()[1 + originParticles]->setRadius(10.0f);
-    // physicsWorld.getParticleListAsVector()[0 + originParticles]->addForce(
-    //     MyVector3(1000.0f, 0.0f, 0.0f));
-    // physicsWorld.getParticleListAsVector()[1 + originParticles]->addForce(
-    //     MyVector3(-1000.0f, 0.0f, 0.0f));
+    // //? 2nd Law of Motion Test : PASS
+    // //? PASS if: The heavier red particle moves slower due to the 2nd law of motion.
+    // MyRenderParticle* testParticleA =
+    //     new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f));
+    // physicsWorld.addParticle(testParticleA, false);
+    // testParticleA->setPosition(MyVector3(-10.0f, 3.0f, 0.0f));
 
-    //? Contact Resolver Test: No Collision Detection (remove generateContacts from
-    // physicsWorld)
-    // physicsWorld.addParticleContact(
-    //     physicsWorld.getParticleListAsVector()[0 + originParticles],
-    //     physicsWorld.getParticleListAsVector()[1 + originParticles],
-    //     1,
-    //     0.5,
-    //     MyVector3(physicsWorld.getParticleListAsVector()[0 + originParticles]->getPosition()
-    //     -
-    //               physicsWorld.getParticleListAsVector()[1 + originParticles]->getPosition())
-    //         .getNormalized());
+    // testParticleA->setMass(1.0f);
+    // testParticleA->addForce(MyVector3(100.0f, 0.0f, 0.0f));
+    // MyRenderParticle* testParticleB =
+    //     new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+    // physicsWorld.addParticle(testParticleB, false);
+    // testParticleB->setPosition(MyVector3(-10.0f, -3.0f, 0.0f));
 
-    //? Rod
-    // physicsWorld.getParticleListAsVector()[0 + originParticles]->setPosition(
-    //     MyVector3(-75.0f, 25.0f, 0.0f));
-    // physicsWorld.getParticleListAsVector()[1 + originParticles]->setPosition(
-    //     MyVector3(-25.0f, -25.0f, 0.0f));
-    // MyVector3 rodLength =
-    //     physicsWorld.getParticleListAsVector()[0 + originParticles]->getPosition() -
-    //     physicsWorld.getParticleListAsVector()[1 + originParticles]->getPosition();
-    // physicsWorld.addRod(physicsWorld.getParticleListAsVector()[0 + originParticles],
-    //                     physicsWorld.getParticleListAsVector()[1 + originParticles],
-    //                     rodLength.getMagnitude());
-    // physicsWorld.getParticleListAsVector()[0 + originParticles]->addForce(
-    //     MyVector3(0.0f, 1000.0f, 0.0f));
+    // testParticleB->setMass(100.0f);
+    // testParticleB->addForce(MyVector3(100.0f, 0.0f, 0.0f));
+    // //? Debugging Code:
+    // // testParticleA->getVelocity().DisplayValuesIndividually("Velocity A: ", 2.0f);
+    // // testParticleB->getVelocity().DisplayValuesIndividually("Velocity B: ", 2.0f);
 
-    //? Particle Spring
-    // physicsWorld.getParticleListAsVector()[2 + originParticles]->setPosition(
-    //     MyVector3(-25.0f, 25.0f, 0.0f));
-    // physicsWorld.getParticleListAsVector()[2 + originParticles]->setUsesGravity(true);
-    // physicsWorld.getParticleListAsVector()[3 + originParticles]->setPosition(
-    //     MyVector3(25.0f, -25.0f, 0.0f));
-    // MyVector3 particleSpringLength =
-    //     physicsWorld.getParticleListAsVector()[2 + originParticles]->getPosition() -
-    //     physicsWorld.getParticleListAsVector()[3 + originParticles]->getPosition();
-    // physicsWorld.addSpring(physicsWorld.getParticleListAsVector()[2 + originParticles],
-    //                        physicsWorld.getParticleListAsVector()[3 + originParticles],
-    //                        5.0f,
-    //                        particleSpringLength.getMagnitude());
+    // //? D'Alembert's Principle Test : PASS
+    // //? PASS if: Both test particles move at the same rate, as particle B's accumulated force
+    // should
+    // //? be the same, despite the force being added in multiple instances.
+    // MyRenderParticle* testParticleA =
+    //     new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f));
+    // physicsWorld.addParticle(testParticleA, false);
+    // testParticleA->setPosition(MyVector3(-10.0f, 3.0f, 0.0f));
 
-    //? Anchored Spring
-    // physicsWorld.getParticleListAsVector()[4 + originParticles]->setPosition(
-    //     MyVector3(25.0f, 25.0f, 0.0f));
-    // physicsWorld.getParticleListAsVector()[4 + originParticles]->setUsesGravity(true);
-    // physicsWorld.addSpring(physicsWorld.getParticleListAsVector()[4 + originParticles],
-    //                        MyVector3(75.0f, -25.0f, 0.0f),
-    //                        5.0f,
-    //                        1.0f);
+    // testParticleA->addForce(MyVector3(100.0f, 0.0f, 0.0f));
+    // MyRenderParticle* testParticleB =
+    //     new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+    // physicsWorld.addParticle(testParticleB, false);
+    // testParticleB->setPosition(MyVector3(-10.0f, -3.0f, 0.0f));
 
-    //? Anchored Rope
-    MyAnchoredRope* anchoredRope =
-        new MyAnchoredRope(particleModel,                   //? Model
-                           MyVector3(1.0f, 0.0f, 0.0f),     //? Tint
-                           MyVector3(-50.0f, 90.0f, 0.0f),  //? Anchor Point
-                           1,                               //? Spring Constant
-                           (unsigned int)5,                 //? Segment Count
-                           1.0f,                            //? Total Rest Length
-                           false);                          //? Uses Gravity
-    physicsWorld.addAnchoredRope(anchoredRope);
-    MyRenderParticle* ropeWeight = new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
-    ropeWeight->setMass(1.0f);
-    ropeWeight->setUsesGravity(true);
-    ropeWeight->setRadius(1.0f);
-    ropeWeight->setPosition(MyVector3(-50.0f, 90.0f, 0.0f));
-    physicsWorld.addParticle(ropeWeight);
-    physicsWorld.addSpring(anchoredRope->getParticles()[anchoredRope->getSegmentCount() - 1],
-                           ropeWeight,
-                           1.0f,
-                           anchoredRope->getSegmentRestLength());
-    ropeWeight->addForce(MyVector3(1.0f, 0.0f, 0.0f));
+    // testParticleB->addForce(MyVector3(50.0f, 0.0f, 0.0f));
+    // testParticleB->addForce(MyVector3(50.0f, 0.0f, 0.0f));
+    // //? Debugging Code:
+    // // testParticleA->getVelocity().DisplayValuesIndividually("Velocity A: ", 2.0f);
+    // // testParticleB->getVelocity().DisplayValuesIndividually("Velocity B: ", 2.0f);
 
-    //? Anchored Chain
-    MyAnchoredChain* anchoredChain =
-        new MyAnchoredChain(particleModel,                  //? Model
-                            MyVector3(0.0f, 0.0f, 1.0f),    //? Tint
-                            MyVector3(50.0f, 90.0f, 0.0f),  //? Anchor Point
-                            (unsigned int)10,               //? Segment Count
-                            10.0f,                          //? Total Rest Length
-                            false);                         //? Uses Gravity
-    physicsWorld.addAnchoredChain(anchoredChain);
-    anchoredChain->getParticles()[anchoredChain->getSegmentCount() - 1]->addForce(
-        MyVector3(1.0f, 0.0f, 0.0f));
-    MyRenderParticle* chainWeight =
-        new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f));
-    chainWeight->setMass(1.0f);
-    chainWeight->setUsesGravity(true);
-    chainWeight->setRadius(1.0f);
-    chainWeight->setPosition(MyVector3(50.0f, 90.0f, 0.0f));
-    physicsWorld.addParticle(chainWeight);
-    physicsWorld.addSpring(anchoredChain->getParticles()[anchoredChain->getSegmentCount() - 1],
-                           chainWeight,
-                           1.0f,
-                           anchoredChain->getSegmentLength());
-    chainWeight->addForce(MyVector3(1.0f, 0.0f, 0.0f));
+    // //? Gravity Test : PASS
+    // //? PASS if: The test particle has a downwards acceleration equal to the gravity.
+    // MyRenderParticle* testParticle =
+    //     new MyRenderParticle(particleModel, MyVector3(1.0f, 1.0f, 1.0f));
+    // physicsWorld.addParticle(testParticle, true);
+    // testParticle->setPosition(MyVector3(0.0f, 1.0f, 0.0f));
+    // //? Debugging Code:
+    // // testParticle->getTestAcceleration().DisplayValuesIndividually("Acceleration", 2.0f);
+
+    // //? Drag Test : NOT NEEDED YET
+
+    // //? Interpenetration Test: ???
+    // //? PASS if: Both particles are simply side by side, with no velocity.
+    // //? - Yes, they'll be in constant collision as their "skins" are simply touching.
+    // MyRenderParticle* particleA = new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f,
+    // 0.0f)); MyRenderParticle* particleB = new MyRenderParticle(particleModel, MyVector3(0.0f,
+    // 0.0f, 1.0f)); physicsWorld.addParticle(particleA, false); physicsWorld.addParticle(particleB,
+    // false); particleA->setRadius(3.0f); particleB->setRadius(3.0f);
+    // particleA->setPosition(MyVector3(0.01f, 12.0f, 0.0f));
+    // particleB->setPosition(MyVector3(-0.01f, 12.0f, 0.0f));
+
+    // MyRenderParticle* particleAA = new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f,
+    // 0.0f)); MyRenderParticle* particleBB = new MyRenderParticle(particleModel, MyVector3(0.0f,
+    // 0.0f, 1.0f)); physicsWorld.addParticle(particleAA, false);
+    // physicsWorld.addParticle(particleBB, false);
+    // particleAA->setRadius(3.0f);
+    // particleBB->setRadius(3.0f);
+    // particleAA->setPosition(MyVector3(1.5f, 4.0f, 0.0f));
+    // particleBB->setPosition(MyVector3(-1.5f, 4.0f, 0.0f));
+
+    // MyRenderParticle* particleAAA =
+    //     new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+    // MyRenderParticle* particleBBB =
+    //     new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f));
+    // physicsWorld.addParticle(particleAAA, false);
+    // physicsWorld.addParticle(particleBBB, false);
+    // particleAAA->setRadius(3.0f);
+    // particleBBB->setRadius(3.0f);
+    // particleAAA->setPosition(MyVector3(2.5f, -4.0f, 0.0f));
+    // particleBBB->setPosition(MyVector3(-2.5f, -4.0f, 0.0f));
+
+    // MyRenderParticle* particleAAAA =
+    //     new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+    // MyRenderParticle* particleBBBB =
+    //     new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f));
+    // physicsWorld.addParticle(particleAAAA, false);
+    // physicsWorld.addParticle(particleBBBB, false);
+    // particleAAAA->setRadius(3.0f);
+    // particleBBBB->setRadius(3.0f);
+    // particleAAAA->setPosition(MyVector3(2.99f, -12.0f, 0.0f));
+    // particleBBBB->setPosition(MyVector3(-2.99f, -12.0f, 0.0f));
+    // //? Debugging Code:
+
+    // //? Collision Test: PASS
+    // //? PASS if: Both particles bounce off each other
+    // MyRenderParticle* particleGoingLeft =
+    //     new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+    // MyRenderParticle* particleGoingRight =
+    //     new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f));
+    // physicsWorld.addParticle(particleGoingLeft, false);
+    // physicsWorld.addParticle(particleGoingRight, false);
+
+    // particleGoingLeft->setRadius(5.0f);
+    // particleGoingLeft->setMass(50.0f);
+    // particleGoingRight->setRadius(5.0f);
+    // particleGoingRight->setMass(50.0f);
+
+    // particleGoingRight->setPosition(MyVector3(-20.0f, 0.0f, 0.0f));
+    // particleGoingRight->addForce(MyVector3(10000.0f, 0.0f, 0.0f));
+    // particleGoingLeft->setPosition(MyVector3(20.0f, 0.0f, 0.0f));
+    // particleGoingLeft->addForce(MyVector3(-10000.0f, 0.0f, 0.0f));
+    // //? Debugging Code:
+
+    // //? Mass Agregate Test: PASS
+    // //? PASS if: The right-most particle moves
+    // MyRenderParticle* particle1 = new MyRenderParticle(particleModel, MyVector3(0.5f, 0.0f,
+    // 0.0f)); MyRenderParticle* particle2 = new MyRenderParticle(particleModel, MyVector3(1.0f,
+    // 0.0f, 0.0f)); MyRenderParticle* particle3 = new MyRenderParticle(particleModel,
+    // MyVector3(1.0f, 0.0f, 1.0f)); MyRenderParticle* particle4 = new
+    // MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 0.5f)); MyRenderParticle* particle5 =
+    // new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f));
+    // physicsWorld.addParticle(particle1, false);
+    // physicsWorld.addParticle(particle2, false);
+    // physicsWorld.addParticle(particle3, false);
+    // physicsWorld.addParticle(particle4, false);
+    // physicsWorld.addParticle(particle5, false);
+    // particle1->setMass(5.0f);
+    // particle2->setMass(5.0f);
+    // particle3->setMass(5.0f);
+    // particle4->setMass(5.0f);
+    // particle5->setMass(5.0f);
+    // particle1->setPosition(-10.0f, 0.0f, 0.0f);
+    // particle2->setPosition(-2.0f, 0.0f, 0.0f);
+    // particle3->setPosition(0.0f, 0.0f, 0.0f);
+    // particle4->setPosition(2.0f, 0.0f, 0.0f);
+    // particle5->setPosition(4.0f, 0.0f, 0.0f);
+    // particle1->addForce(MyVector3(1000.0f, 0.0f, 0.0f));
+    // //? Debugging Code:
+
+    //? Rod Creation
+    //? Create the 2 Ends
+    MyRenderParticle* particleA = new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+    MyRenderParticle* particleB = new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f));
+    MyRenderParticle* groundA   = new MyRenderParticle(particleModel, MyVector3(1.0f, 0.3f, 0.3f));
+    MyRenderParticle* groundB   = new MyRenderParticle(particleModel, MyVector3(0.3f, 0.3f, 1.0f));
+    physicsWorld.addParticle(particleA, true);
+    physicsWorld.addParticle(particleB, false);
+    physicsWorld.addParticle(groundA, false);
+    physicsWorld.addParticle(groundB, false);
+    groundA->setIsPersistent(true);
+    groundB->setIsPersistent(true);
+    groundA->setOriginalPosition(MyVector3(-2.5f, 0.0f, 0.0f), true);
+    groundB->setOriginalPosition(MyVector3(2.5f, 0.0f, 0.0f), true);
+    particleA->setMass(100.0f);
+    particleB->setMass(1.0f);
+    groundA->setMass(10.0f);
+    groundB->setMass(10.0f);
+
+    //? Test the Rod's Behaviour
+    // //? - Rod Drop :
+    // particleA->setOriginalPosition(MyVector3(-2.5f, 15.0f, 0.0f), true);
+    // particleB->setOriginalPosition(MyVector3(2.5f, 10.0f, 0.0f), true);
+    // MyVector3 rodLength = particleA->getPosition() - particleB->getPosition();
+    // physicsWorld.addRod(particleA, particleB, rodLength.getMagnitude());
+    // particleA->addForce(MyVector3(0.0f, -1000.0f, 0.0f));
+    // particleB->addForce(MyVector3(0.0f, -1000.0f, 0.0f));
+    // //? Debugging Code:
+    // MyVector3 distanceVector = particleA->getPosition() - particleB->getPosition();
+    // cout << "Distance: " << distanceVector.getMagnitude() << endl;
+
+    //? - Rod Stretch
+    particleA->setOriginalPosition(MyVector3(-2.5f, 15.0f, 0.0f), true);
+    particleB->setOriginalPosition(MyVector3(2.5f, 10.0f, 0.0f), true);
+    particleB->setIsPersistent(true);
+    MyVector3 rodLength = particleA->getPosition() - particleB->getPosition();
+    physicsWorld.addRod(particleA, particleB, rodLength.getMagnitude());
+    particleA->addForce(MyVector3(-1000.0f, 0.0, 0.0f));
+
+    //? - Rod Spin :
+    // particleA->setOriginalPosition(MyVector3(-2.5f, 10.0f, 0.0f), true);
+    // particleB->setOriginalPosition(MyVector3(2.5f, 10.0f, 0.0f), true);
+    // MyVector3 rodLength = particleA->getPosition() - particleB->getPosition();
+    // physicsWorld.addRod(particleA, particleB, rodLength.getMagnitude());
+    // particleA->addForce(MyVector3(0.0f, -1000.0f, 0.0f));
+    // particleB->addForce(MyVector3(0.0f, 1000.0f, 0.0f));
+
+    // //? Rod Collision
+    // //? Create the 4 Rod Ends
+    // MyRenderParticle* particleTopA =
+    //     new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+    // MyRenderParticle* particleTopB =
+    //     new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+    // physicsWorld.addParticle(particleTopA, false);
+    // physicsWorld.addParticle(particleTopB, false);
+
+    // MyRenderParticle* particleBottomA =
+    //     new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+    // MyRenderParticle* particleBottomB =
+    //     new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+    // physicsWorld.addParticle(particleBottomA, false);
+    // physicsWorld.addParticle(particleBottomB, false);
+
+    //? Test the Collision
+    // //? - Head On : PASS
+    // particleTopA->setPosition(MyVector3(-2.5f, 5.0f, 0.0f));
+    // particleTopB->setPosition(MyVector3(2.5f, 5.0f, 0.0f));
+    // MyVector3 topRodLength = particleTopA->getPosition() - particleTopB->getPosition();
+    // physicsWorld.addRod(particleTopA, particleTopB, topRodLength.getMagnitude());
+    // particleBottomA->setPosition(MyVector3(-2.5f, -5.0f, 0.0f));
+    // particleBottomB->setPosition(MyVector3(2.5f, -5.0f, 0.0f));
+    // MyVector3 bottomRodLength = particleBottomA->getPosition() -
+    // particleBottomB->getPosition(); physicsWorld.addRod(particleBottomA, particleBottomB,
+    // bottomRodLength.getMagnitude()); particleTopA->addForce(MyVector3(0.0f, -1000.0f, 0.0f));
+    // particleTopB->addForce(MyVector3(0.0f, -1000.0f, 0.0f));
+    // particleBottomA->addForce(MyVector3(0.0f, 1000.0f, 0.0f));
+    // particleBottomB->addForce(MyVector3(0.0f, 1000.0f, 0.0f));
+
+    // //? - Side : PASS
+    // particleTopA->setPosition(MyVector3(-2.5f, 5.0f, 0.0f));
+    // particleTopB->setPosition(MyVector3(0.0f, 5.0f, 0.0f));
+    // MyVector3 topRodLength = particleTopA->getPosition() - particleTopB->getPosition();
+    // physicsWorld.addRod(particleTopA, particleTopB, topRodLength.getMagnitude());
+    // particleBottomA->setPosition(MyVector3(0.0f, -5.0f, 0.0f));
+    // particleBottomB->setPosition(MyVector3(2.5f, -5.0f, 0.0f));
+    // MyVector3 bottomRodLength = particleBottomA->getPosition() -
+    // particleBottomB->getPosition(); physicsWorld.addRod(particleBottomA, particleBottomB,
+    // bottomRodLength.getMagnitude()); particleTopA->addForce(MyVector3(0.0f, -1000.0f, 0.0f));
+    // particleTopB->addForce(MyVector3(0.0f, -1000.0f, 0.0f));
+    // particleBottomA->addForce(MyVector3(0.0f, 1000.0f, 0.0f));
+    // particleBottomB->addForce(MyVector3(0.0f, 1000.0f, 0.0f));
+
+    // //? - Complex : PASS
+    // particleTopA->setPosition(MyVector3(-2.5f, 5.0f, 0.0f));
+    // particleTopB->setPosition(MyVector3(5.0f, 5.0f, 0.0f));
+    // MyVector3 topRodLength = particleTopA->getPosition() - particleTopB->getPosition();
+    // physicsWorld.addRod(particleTopA, particleTopB, topRodLength.getMagnitude());
+    // particleBottomA->setPosition(MyVector3(-5.0f, -5.0f, 0.0f));
+    // particleBottomB->setPosition(MyVector3(2.5f, -5.0f, 0.0f));
+    // MyVector3 bottomRodLength = particleBottomA->getPosition() -
+    // particleBottomB->getPosition(); physicsWorld.addRod(particleBottomA, particleBottomB,
+    // bottomRodLength.getMagnitude());
+
+    // particleTopA->addForce(MyVector3(0.0f, -1000.0f, 0.0f));
+    // particleBottomB->addForce(MyVector3(0.0f, 1000.0f, 0.0f));
+    // //* Confirmed Working
+
+    // //? Rod Chain
+    // //? Create the 4 Points
+    // MyRenderParticle* particleA = new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f,
+    // 0.0f)); MyRenderParticle* particleB = new MyRenderParticle(particleModel, MyVector3(1.0f,
+    // 0.0f, 0.0f)); MyRenderParticle* particleC = new MyRenderParticle(particleModel,
+    // MyVector3(1.0f, 0.0f, 0.0f)); MyRenderParticle* particleD = new
+    // MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+    // physicsWorld.addParticle(particleA, false);
+    // physicsWorld.addParticle(particleB, false);
+    // physicsWorld.addParticle(particleC, false);
+    // physicsWorld.addParticle(particleD, false);
+    // particleA->setPosition(MyVector3(-7.5f, 0.0f, 0.0f));
+    // particleB->setPosition(MyVector3(-2.5f, 0.0f, 0.0f));
+    // particleC->setPosition(MyVector3(2.5f, 0.0f, 0.0f));
+    // particleD->setPosition(MyVector3(7.5f, 0.0f, 0.0f));
+
+    // //? Join with 3 Rods
+    // MyVector3 rodABLength = particleA->getPosition() - particleB->getPosition();
+    // physicsWorld.addRod(particleA, particleB, rodABLength.getMagnitude());
+    // MyVector3 rodBCLength = particleB->getPosition() - particleC->getPosition();
+    // physicsWorld.addRod(particleB, particleC, rodBCLength.getMagnitude());
+    // MyVector3 rodCDLength = particleC->getPosition() - particleD->getPosition();
+    // physicsWorld.addRod(particleC, particleD, rodCDLength.getMagnitude());
+    // //* Confirmed Working
+
+    // //? Test Behaviour
+    // //? Movement
+    // particleC->addForce(MyVector3(0.0f, -1000.0f, 0.0f));
+
+    // //? Anchored Rod
+    // //? Create the attached Particle and the anchor Particle
+    // MyRenderParticle* attachedParticle =
+    //     new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+    // MyRenderParticle* anchorParticle =
+    //     new MyRenderParticle(particleModel, MyVector3(1.0f, 1.0f, 1.0f));
+    // physicsWorld.addParticle(attachedParticle, false);
+    // physicsWorld.addParticle(anchorParticle, false);
+    // attachedParticle->setPosition(MyVector3(-5.0f, 0.0f, 0.0f));
+    // anchorParticle->setPosition(MyVector3(0.0f, 0.0f, 0.0f));
+    // anchorParticle->setIsPersistent(true);
+
+    // //? Test the Rod's Behaviour
+    // //? - Spin : PASS
+    // MyVector3 rodLength = attachedParticle->getPosition() - anchorParticle->getPosition();
+    // physicsWorld.addRod(attachedParticle, anchorParticle, rodLength.getMagnitude());
+    // attachedParticle->addForce(MyVector3(0.0f, 1000.0f, 0.0f));
+    // //? - Stretch : PASS
+    // MyVector3 rodLength = attachedParticle->getPosition() - anchorParticle->getPosition();
+    // physicsWorld.addRod(attachedParticle, anchorParticle, rodLength.getMagnitude());
+    // attachedParticle->addForce(MyVector3(-1000.0f, 0.0f, 0.0f));
+    // //? - Compress : PASS
+    // MyVector3 rodLength = attachedParticle->getPosition() - anchorParticle->getPosition();
+    // physicsWorld.addRod(attachedParticle, anchorParticle, rodLength.getMagnitude());
+    // attachedParticle->addForce(MyVector3(1000.0f, 0.0f, 0.0f));
+    // //? - Custom Rod Length : PASS
+    // double rodLength = 10;  //? Originally 5
+    // physicsWorld.addRod(attachedParticle, anchorParticle, rodLength);
+    // attachedParticle->addForce(MyVector3(1000.0f, 0.0f, 0.0f));
+    // //* Confirmed Working
+
+    // //? Cable Creation
+    // //? Create the 2 Ends
+    // MyRenderParticle* particleA = new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f,
+    // 0.0f)); MyRenderParticle* particleB = new MyRenderParticle(particleModel, MyVector3(1.0f,
+    // 0.0f, 0.0f)); physicsWorld.addParticle(particleA, false); physicsWorld.addParticle(particleB,
+    // true); particleA->setOriginalPosition(MyVector3(-2.5f, 0.0f, 0.0f), true);
+    // particleA->setRadius(1.0f);
+    // particleB->setOriginalPosition(MyVector3(2.5f, 0.0f, 0.0f), true);
+    // particleB->setRadius(1.0f);
+
+    // //? Test the Cable's Behaviour
+    // //? - Spin : PASS
+    // particleA->setIsPersistent(true);
+    // MyVector3 cableLength = particleA->getPosition() - particleB->getPosition();
+    // physicsWorld.addRod(particleA, particleB, cableLength.getMagnitude());
+    // particleB->setMass(100.0f);
+    // particleB->addForce(MyVector3(0.0f, 0.0f, 0.0f));
+    // //? - Stretch : PASS
+    // MyVector3 cableLength = particleA->getPosition() - particleB->getPosition();
+    // physicsWorld.addRod(particleA, particleB, cableLength.getMagnitude());
+    // particleA->addForce(MyVector3(-1000.0f, 0.0f, 0.0f));
+    // particleB->addForce(MyVector3(1000.0f, 0.0f, 0.0f));
+    // //? - Compress : PASS
+    // MyVector3 cableLength = particleA->getPosition() - particleB->getPosition();
+    // physicsWorld.addRod(particleA, particleB, cableLength.getMagnitude());
+    // particleA->addForce(MyVector3(1000.0f, 0.0f, 0.0f));
+    // particleB->addForce(MyVector3(-1000.0f, 0.0f, 0.0f));
+    // //? - Custom Rod Length : PASS
+    // double cableLength = 10;  //? Originally 5
+    // physicsWorld.addRod(particleA, particleB, cableLength);
+    // particleA->addForce(MyVector3(1000.0f, 0.0f, 0.0f));
+    // particleB->addForce(MyVector3(-1000.0f, 0.0f, 0.0f));
+    // //* Confirmed Working
+
+    // //? Cable Pendulum
+    // //? Create the 2 Ends
+    // MyRenderParticle* particleA = new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f,
+    // 0.0f)); MyRenderParticle* particleB = new MyRenderParticle(particleModel, MyVector3(0.0f,
+    // 0.0f, 1.0f)); physicsWorld.addParticle(particleA, false); physicsWorld.addParticle(particleB,
+    // false); particleA->setOriginalPosition(MyVector3(0.0f, 10.0f, -10.0f), true);
+    // particleA->setRadius(1.0f);
+    // particleB->setOriginalPosition(MyVector3(0.0f, 10.0f, 10.0f), true);
+    // particleB->setRadius(1.0f);
+
+    // MyRenderParticle* particleC = new MyRenderParticle(particleModel, MyVector3(0.0f, 1.0f,
+    // 0.0f)); physicsWorld.addParticle(particleC, true);
+    // particleC->setOriginalPosition(MyVector3(0.0f, 0.0f, 0.0f), true);
+    // particleC->setRadius(1.0f);
+
+    // //? Test the Cable's Behaviour
+    // //? - Push : PASS
+    // particleA->setIsPersistent(true);
+    // particleB->setIsPersistent(true);
+    // MyVector3 cableALength = particleA->getPosition() - particleC->getPosition();
+    // MyVector3 cableBLength = particleB->getPosition() - particleC->getPosition();
+    // physicsWorld.addCable(particleA, particleC, cableALength.getMagnitude());
+    // physicsWorld.addCable(particleB, particleC, cableBLength.getMagnitude());
+    // particleC->setMass(10.0f);
+    // particleC->addForce(MyVector3(1000.0f, 0.0f, 0.0f));
 
     //* - - - - - END OF PARTICLES - - - - -
 
     //* - - - - - PRE-RUNTIME - - - - -
-    timerClockStart   = timerClock::now();
+    // //? Phase 2 - Newton's Cradle
+    // double cableLength;
+    // double particleGap;
+    // double particleRadius;
+    // double gravityStrength;
+    // MyVector3 appliedForce;
+    // double x;
+    // double y;
+    // double z;
+    // cout << "Cable Length: ";
+    // cin >> cableLength;
+    // cout << "Particle Gap: ";
+    // cin >> particleGap;
+    // cout << "Particle Radius: ";
+    // cin >> particleRadius;
+    // cout << "Gravity Strength: ";
+    // cin >> gravityStrength;
+    // cout << "Applied Force: " << endl;
+    // cout << "x: ";
+    // cin >> x;
+    // cout << "y: ";
+    // cin >> y;
+    // cout << "z: ";
+    // cin >> z;
+
+    // createNewtonsCradle(particleModel,
+    //                     cableLength,
+    //                     particleGap,
+    //                     particleRadius,
+    //                     gravityStrength,
+    //                     MyVector3(x, y, z));
     //* - - - - - END OF PRE-RUNTIME - - - - -
 
     //* - - - - - PHYSICS WORLD INITIALIZATION - - - - -
-
-    //* - - - - - DEBUGGING - - - - -
-
-    //* - - - - - END OF DEBUGGING - - - - -
-
+    timerClockStart   = timerClock::now();
     //* - - - - - END OF PHYSICS WORLD INITIALIZATION - - - - -
 
     //* - - - - - RUNTIME - - - - -
@@ -555,14 +900,17 @@ int main(void) {
 
                 //? Place physics related updates BELOW this line
                 //* - - - - - DEBUGGING - - - - -
+
                 //* - - - - - END OF DEBUGGING - - - - -
-
-                physicsWorld.update((double)millisecond.count() / 1000);
                 //? Place physics related updates ABOVE this line
-
+                physicsWorld.update((double)millisecond.count() / 1000);
                 currentNanosecond -= currentNanosecond;
             }
         } else {
+            if (physicsStep) {
+                physicsWorld.update(0.1f);
+                physicsStep = false;
+            }
         }
         //* - - - - - END OF FIXED UPDATE - - - - -
 

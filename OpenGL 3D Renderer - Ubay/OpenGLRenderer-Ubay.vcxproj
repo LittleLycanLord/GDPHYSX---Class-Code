@@ -162,6 +162,7 @@
     <ClCompile Include="MyClasses\MyParticleConnections\MyAnchoredRope\MyAnchoredRope.cpp" />
     <ClCompile Include="MyClasses\MyParticleContact\MyParticleContact.cpp" />
     <ClCompile Include="MyClasses\MyParticleLink\MyParticleLink.cpp" />
+    <ClCompile Include="MyClasses\MyParticleLink\MyRod\MyCable\MyCable.cpp" />
     <ClCompile Include="MyClasses\MyParticleLink\MyRod\MyRod.cpp" />
     <ClCompile Include="MyClasses\MyParticle\MyParticle.cpp" />
     <ClCompile Include="MyClasses\MyParticle\MyParticleSystem\MyParticleSystem.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="MyClasses\MyParticleConnections\MyAnchoredRope\MyAnchoredRope.hpp" />
     <ClInclude Include="MyClasses\MyParticleContact\MyParticleContact.hpp" />
     <ClInclude Include="MyClasses\MyParticleLink\MyParticleLink.hpp" />
+    <ClInclude Include="MyClasses\MyParticleLink\MyRod\MyCable\MyCable.hpp" />
     <ClInclude Include="MyClasses\MyParticleLink\MyRod\MyRod.hpp" />
     <ClInclude Include="MyClasses\MyParticle\MyParticle.hpp" />
     <ClInclude Include="MyClasses\MyParticle\MyParticleSystem\MyParticleSystem.hpp" />
