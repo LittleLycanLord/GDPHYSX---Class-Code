@@ -18,6 +18,15 @@ MyParticleContact* MyRod::getContact() {
     MyVector3 direction =
         MyVector3(this->particleB->getPosition() - this->particleA->getPosition()).getNormalized();
 
+    MyVector3 angularDirection = this->particleA->getAngularVelocity().getNormalized();
+
+    //? When one of the particles rotate, the other particle's position has to change similar to an
+    //? orbit, with a radius equal to the rod's length, with an axis parallel to the rotating
+    //? particle's rotation.
+
+    // quat rotateBy = rotate(mat4(1.0f), (float)angularMagnitude, (vec3)angularDirection);
+    // this->particleB->setRotation((toQuat(this->particleB->getRotation()) * rotateBy));
+
     MyParticleContact* contact;
 
     if (this->getDistanceBetweenParticles() > this->length) {

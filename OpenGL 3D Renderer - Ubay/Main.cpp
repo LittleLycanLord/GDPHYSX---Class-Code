@@ -157,6 +157,77 @@ void createNewtonsCradle(My3DModel* particleModel,
     }
 }
 
+
+void makeCarousel(My3DModel* particleModel, MyParticle* topParticle) {
+    //? Create the Anchors and Seats
+    double fortyFiveDegree((sqrt(2) / 2) *
+                           40.0f);  //* evenly spaced out on a circle with a diameter of 80m.
+
+    MyRenderParticle* contactParticle =
+        new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+
+    vector<MyRenderParticle*> seats;
+    for (int i = 0; i < 8; i++) {
+        MyRenderParticle* anchorParticle =
+            new MyRenderParticle(particleModel, MyVector3(0.5f, 0.5f, 0.5f));
+        if (i == 0) contactParticle = anchorParticle;
+        physicsWorld.addParticle(anchorParticle, false);
+        MyRenderParticle* seatParticle =
+            new MyRenderParticle(particleModel, MyVector3(1.0f, 1.0f, 0.0f));
+        physicsWorld.addParticle(seatParticle, true);
+
+        seats.push_back(seatParticle);
+
+        //? Following the Unit Circle
+        switch (i) {
+            case 0:
+                anchorParticle->setOriginalPosition(MyVector3(40.0f, 40.0f, 0.0f), true);
+                seatParticle->setPosition(MyVector3(40.0f, 25.0f, 0.0f));
+                break;
+            case 1:
+                anchorParticle->setOriginalPosition(
+                    MyVector3(fortyFiveDegree, 40.0f, fortyFiveDegree), true);
+                seatParticle->setPosition(MyVector3(fortyFiveDegree, 25.0f, fortyFiveDegree));
+                break;
+            case 2:
+                anchorParticle->setOriginalPosition(MyVector3(0.0f, 40.0f, 40.0f), true);
+                seatParticle->setPosition(MyVector3(0.0f, 25.0f, 40.0f));
+                break;
+            case 3:
+                anchorParticle->setOriginalPosition(
+                    MyVector3(-fortyFiveDegree, 40.0f, fortyFiveDegree), true);
+                seatParticle->setPosition(MyVector3(-fortyFiveDegree, 25.0f, fortyFiveDegree));
+                break;
+            case 4:
+                anchorParticle->setOriginalPosition(MyVector3(-40.0f, 40.0f, 0.0f), true);
+                seatParticle->setPosition(MyVector3(-40.0f, 25.0f, 0.0f));
+                break;
+            case 5:
+                anchorParticle->setOriginalPosition(
+                    MyVector3(-fortyFiveDegree, 40.0f, -fortyFiveDegree), true);
+                seatParticle->setPosition(MyVector3(-fortyFiveDegree, 25.0f, -fortyFiveDegree));
+                break;
+            case 6:
+                anchorParticle->setOriginalPosition(MyVector3(0.0f, 40.0f, -40.0f), true);
+                seatParticle->setPosition(MyVector3(0.0f, 25.0f, -40.0f));
+                break;
+            case 7:
+                anchorParticle->setOriginalPosition(
+                    MyVector3(fortyFiveDegree, 40.0f, -fortyFiveDegree), true);
+                seatParticle->setPosition(MyVector3(fortyFiveDegree, 25.0f, -fortyFiveDegree));
+                break;
+        }
+        anchorParticle->setRadius(1.0f);
+        anchorParticle->setLockY(true);
+        anchorParticle->setMass(60.0f);
+        seatParticle->setRadius(5.0f);  //* "with a radius of 5m"
+        seatParticle->setMass(60.0f);   //* "and around 60kg"
+        MyVector3 anchorRod = topParticle->getPosition() - anchorParticle->getPosition();
+        physicsWorld.addRod(topParticle, anchorParticle, anchorRod.getMagnitude());
+        physicsWorld.addCable(anchorParticle, seatParticle, 15.0f);
+    }
+}
+
 int main(void) {
     //* - - - - - WINDOW CREATION - - - - -
     GLFWwindow* window;
@@ -609,24 +680,25 @@ int main(void) {
     // particle1->addForce(MyVector3(1000.0f, 0.0f, 0.0f));
     // //? Debugging Code:
 
-    //? Rod Creation
-    //? Create the 2 Ends
-    MyRenderParticle* particleA = new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
-    MyRenderParticle* particleB = new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f));
-    MyRenderParticle* groundA   = new MyRenderParticle(particleModel, MyVector3(1.0f, 0.3f, 0.3f));
-    MyRenderParticle* groundB   = new MyRenderParticle(particleModel, MyVector3(0.3f, 0.3f, 1.0f));
-    physicsWorld.addParticle(particleA, true);
-    physicsWorld.addParticle(particleB, false);
-    physicsWorld.addParticle(groundA, false);
-    physicsWorld.addParticle(groundB, false);
-    groundA->setIsPersistent(true);
-    groundB->setIsPersistent(true);
-    groundA->setOriginalPosition(MyVector3(-2.5f, 0.0f, 0.0f), true);
-    groundB->setOriginalPosition(MyVector3(2.5f, 0.0f, 0.0f), true);
-    particleA->setMass(100.0f);
-    particleB->setMass(1.0f);
-    groundA->setMass(10.0f);
-    groundB->setMass(10.0f);
+    // //? Rod Creation
+    // //? Create the 2 Ends
+    // MyRenderParticle* particleA = new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f,
+    // 0.0f)); MyRenderParticle* particleB = new MyRenderParticle(particleModel, MyVector3(0.0f,
+    // 0.0f, 1.0f)); MyRenderParticle* groundA   = new MyRenderParticle(particleModel,
+    // MyVector3(1.0f, 0.3f, 0.3f)); MyRenderParticle* groundB   = new
+    // MyRenderParticle(particleModel, MyVector3(0.3f, 0.3f, 1.0f));
+    // physicsWorld.addParticle(particleA, true);
+    // physicsWorld.addParticle(particleB, false);
+    // physicsWorld.addParticle(groundA, false);
+    // physicsWorld.addParticle(groundB, false);
+    // groundA->setIsPersistent(true);
+    // groundB->setIsPersistent(true);
+    // groundA->setOriginalPosition(MyVector3(-2.5f, 0.0f, 0.0f), true);
+    // groundB->setOriginalPosition(MyVector3(2.5f, 0.0f, 0.0f), true);
+    // particleA->setMass(100.0f);
+    // particleB->setMass(1.0f);
+    // groundA->setMass(10.0f);
+    // groundB->setMass(10.0f);
 
     //? Test the Rod's Behaviour
     // //? - Rod Drop :
@@ -640,13 +712,13 @@ int main(void) {
     // MyVector3 distanceVector = particleA->getPosition() - particleB->getPosition();
     // cout << "Distance: " << distanceVector.getMagnitude() << endl;
 
-    //? - Rod Stretch
-    particleA->setOriginalPosition(MyVector3(-2.5f, 15.0f, 0.0f), true);
-    particleB->setOriginalPosition(MyVector3(2.5f, 10.0f, 0.0f), true);
-    particleB->setIsPersistent(true);
-    MyVector3 rodLength = particleA->getPosition() - particleB->getPosition();
-    physicsWorld.addRod(particleA, particleB, rodLength.getMagnitude());
-    particleA->addForce(MyVector3(-1000.0f, 0.0, 0.0f));
+    // //? - Rod Stretch
+    // particleA->setOriginalPosition(MyVector3(-2.5f, 15.0f, 0.0f), true);
+    // particleB->setOriginalPosition(MyVector3(2.5f, 10.0f, 0.0f), true);
+    // particleB->setIsPersistent(true);
+    // MyVector3 rodLength = particleA->getPosition() - particleB->getPosition();
+    // physicsWorld.addRod(particleA, particleB, rodLength.getMagnitude());
+    // particleA->addForce(MyVector3(-1000.0f, 0.0, 0.0f));
 
     //? - Rod Spin :
     // particleA->setOriginalPosition(MyVector3(-2.5f, 10.0f, 0.0f), true);
@@ -836,6 +908,134 @@ int main(void) {
     // particleC->setMass(10.0f);
     // particleC->addForce(MyVector3(1000.0f, 0.0f, 0.0f));
 
+    //? Whirly Creation
+    //? Create the Pole
+    MyRenderParticle* topParticle =
+        new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+    MyRenderParticle* bottomParticle =
+        new MyRenderParticle(particleModel, MyVector3(0.0f, 0.0f, 1.0f));
+    physicsWorld.addParticle(topParticle, false);
+    physicsWorld.addParticle(bottomParticle, false);
+    // topParticle->setOriginalPosition(MyVector3(0.0f, 40.0f, 0.0f), true);
+    // topParticle->setIsPersistent(true);
+    topParticle->setPosition(MyVector3(0.0f, 2.0f, 0.0f));
+    bottomParticle->setOriginalPosition(MyVector3(0.0f, 0.0f, 0.0f), true);
+    bottomParticle->setIsPersistent(true);
+    topParticle->setRadius(1.0f);
+    topParticle->setMass(60.0f);
+    bottomParticle->setRadius(1.0f);
+    bottomParticle->setMass(60.0f);
+
+    MyVector3 rodABLength = topParticle->getPosition() - bottomParticle->getPosition();
+    MyRod* pole = physicsWorld.addRod(topParticle, bottomParticle, rodABLength.getMagnitude());
+
+    // //? Create the Anchors and Seats
+    // double fortyFiveDegree((sqrt(2) / 2) *
+    //                        40.0f);  //* evenly spaced out on a circle with a diameter of 80m.
+
+    // MyRenderParticle* contactParticle =
+    //     new MyRenderParticle(particleModel, MyVector3(1.0f, 0.0f, 0.0f));
+
+    // vector<MyRenderParticle*> seats;
+
+    // //* "It should seat - 8 people represented by spheres"
+    // for (int i = 0; i < 8; i++) {
+    //     MyRenderParticle* anchorParticle =
+    //         new MyRenderParticle(particleModel, MyVector3(0.5f, 0.5f, 0.5f));
+    //     if (i == 0) contactParticle = anchorParticle;
+    //     physicsWorld.addParticle(anchorParticle, false);
+    //     MyRenderParticle* seatParticle =
+    //         new MyRenderParticle(particleModel, MyVector3(1.0f, 1.0f, 0.0f));
+    //     physicsWorld.addParticle(seatParticle, true);
+
+    //     seats.push_back(seatParticle);
+
+    //     //? Following the Unit Circle
+    //     switch (i) {
+    //         case 0:
+    //             anchorParticle->setOriginalPosition(MyVector3(40.0f, 40.0f, 0.0f), true);
+    //             seatParticle->setPosition(MyVector3(40.0f, 25.0f, 0.0f));
+    //             break;
+    //         case 1:
+    //             anchorParticle->setOriginalPosition(
+    //                 MyVector3(fortyFiveDegree, 40.0f, fortyFiveDegree), true);
+    //             seatParticle->setPosition(MyVector3(fortyFiveDegree, 25.0f, fortyFiveDegree));
+    //             break;
+    //         case 2:
+    //             anchorParticle->setOriginalPosition(MyVector3(0.0f, 40.0f, 40.0f), true);
+    //             seatParticle->setPosition(MyVector3(0.0f, 25.0f, 40.0f));
+    //             break;
+    //         case 3:
+    //             anchorParticle->setOriginalPosition(
+    //                 MyVector3(-fortyFiveDegree, 40.0f, fortyFiveDegree), true);
+    //             seatParticle->setPosition(MyVector3(-fortyFiveDegree, 25.0f, fortyFiveDegree));
+    //             break;
+    //         case 4:
+    //             anchorParticle->setOriginalPosition(MyVector3(-40.0f, 40.0f, 0.0f), true);
+    //             seatParticle->setPosition(MyVector3(-40.0f, 25.0f, 0.0f));
+    //             break;
+    //         case 5:
+    //             anchorParticle->setOriginalPosition(
+    //                 MyVector3(-fortyFiveDegree, 40.0f, -fortyFiveDegree), true);
+    //             seatParticle->setPosition(MyVector3(-fortyFiveDegree, 25.0f, -fortyFiveDegree));
+    //             break;
+    //         case 6:
+    //             anchorParticle->setOriginalPosition(MyVector3(0.0f, 40.0f, -40.0f), true);
+    //             seatParticle->setPosition(MyVector3(0.0f, 25.0f, -40.0f));
+    //             break;
+    //         case 7:
+    //             anchorParticle->setOriginalPosition(
+    //                 MyVector3(fortyFiveDegree, 40.0f, -fortyFiveDegree), true);
+    //             seatParticle->setPosition(MyVector3(fortyFiveDegree, 25.0f, -fortyFiveDegree));
+    //             break;
+    //     }
+    //     anchorParticle->setRadius(1.0f);
+    //     anchorParticle->setLockY(true);
+    //     anchorParticle->setMass(60.0f);
+    //     seatParticle->setRadius(5.0f);  //* "with a radius of 5m"
+    //     seatParticle->setMass(60.0f);   //* "and around 60kg"
+    //     MyVector3 anchorRod = topParticle->getPosition() - anchorParticle->getPosition();
+    //     physicsWorld.addRod(topParticle, anchorParticle, anchorRod.getMagnitude());
+    //     physicsWorld.addCable(anchorParticle, seatParticle, 15.0f);
+    // }
+
+    //? Spin the Pole
+    // topParticle->addForceAtPoint(
+    //     MyVector3(1000.0f, 0.0f, 0.0f),
+    //     MyVector3(topParticle->getPosition().x,
+    //               topParticle->getPosition().y,
+    //               topParticle->getPosition().z - topParticle->getRadius()));
+    // contactParticle->addForce(MyVector3(0.0f, 0.0f, 100000.0f));
+
+    // double spinPower = 100000.0f;
+    // for (int i = 0; i < 8; i++) {
+    //     switch (i) {
+    //         case 0:
+    //             seats[i]->addForce(MyVector3(0.0f, 0.0f, 40.0f) * spinPower);
+    //             break;
+    //         case 1:
+    //             seats[i]->addForce(MyVector3(-fortyFiveDegree, 0.0f, fortyFiveDegree) *
+    //             spinPower); break;
+    //         case 2:
+    //             seats[i]->addForce(MyVector3(-40.0f, 0.0f, 0.0f) * spinPower);
+    //             break;
+    //         case 3:
+    //             seats[i]->addForce(MyVector3(-fortyFiveDegree, 0.0f, -fortyFiveDegree) *
+    //             spinPower); break;
+    //         case 4:
+    //             seats[i]->addForce(MyVector3(0.0f, 0.0f, -40.0f) * spinPower);
+    //             break;
+    //         case 5:
+    //             seats[i]->addForce(MyVector3(fortyFiveDegree, 0.0f, -fortyFiveDegree) *
+    //             spinPower); break;
+    //         case 6:
+    //             seats[i]->addForce(MyVector3(40.0f, 0.0f, 0.0f) * spinPower);
+    //             break;
+    //         case 7:
+    //             seats[i]->addForce(MyVector3(fortyFiveDegree, 0.0f, fortyFiveDegree) *
+    //             spinPower); break;
+    //     }
+
     //* - - - - - END OF PARTICLES - - - - -
 
     //* - - - - - PRE-RUNTIME - - - - -
@@ -870,6 +1070,9 @@ int main(void) {
     //                     particleRadius,
     //                     gravityStrength,
     //                     MyVector3(x, y, z));
+
+    //? PC02 - Carousel Thingy
+    bool carouselMade = false;
     //* - - - - - END OF PRE-RUNTIME - - - - -
 
     //* - - - - - PHYSICS WORLD INITIALIZATION - - - - -
@@ -900,6 +1103,18 @@ int main(void) {
 
                 //? Place physics related updates BELOW this line
                 //* - - - - - DEBUGGING - - - - -
+                if (!carouselMade) {
+                    topParticle->setPosition(topParticle->getPosition() +
+                                             MyVector3(0.0f, 1.0f, 0.0f));
+                    rodABLength  = topParticle->getPosition() - bottomParticle->getPosition();
+                    pole->length = rodABLength.getMagnitude();
+                }
+                if (!carouselMade && topParticle->getPosition().y == 40.0f) {
+                    carouselMade = true;
+                    topParticle->setOriginalPosition(MyVector3(0.0f, 40.0f, 0.0f), true);
+                    topParticle->setIsPersistent(true);
+                    makeCarousel(particleModel, topParticle);
+                }
 
                 //* - - - - - END OF DEBUGGING - - - - -
                 //? Place physics related updates ABOVE this line
